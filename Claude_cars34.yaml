@@ -1,0 +1,181 @@
+inboundCall:
+  name: Claude_cars34
+  description: Claude Cars 34 - Basic Language Selection Flow
+  division: Claude_Exploration_Vijay
+  startUpRef: "/inboundCall/menus/menu[Language Menu_1]"
+  defaultLanguage: en-us
+  supportedLanguages:
+    en-us:
+      defaultLanguageSkill:
+        noValue: true
+      textToSpeech:
+        defaultEngine:
+          voice: Jill
+    es-us:
+      defaultLanguageSkill:
+        noValue: true
+      textToSpeech:
+        defaultEngine:
+          voice: Isabel
+  initialGreeting:
+    noValue: true
+  settingsErrorHandling:
+    errorHandling:
+      disconnect:
+        none: true
+    preHandlingAudio:
+      tts: "An error has occurred. Goodbye."
+  settingsMenu:
+    extensionDialingMaxDelay:
+      lit:
+        seconds: 1
+    listenForExtensionDialing:
+      lit: false
+    menuSelectionTimeout:
+      lit:
+        seconds: 10
+    repeatCount:
+      lit: 3
+  settingsPrompts:
+    ensureAudioInPrompts: false
+
+  menus:
+    - menu:
+        name: Language Menu
+        refId: Language Menu_1
+        audio:
+          tts: "Welcome to Claude Cars. For English, press 1. Para Español, oprima 2."
+        settingsMenu:
+          extensionDialingMaxDelay:
+            noValue: true
+          listenForExtensionDialing:
+            lit: false
+          menuSelectionTimeout:
+            lit:
+              seconds: 10
+          repeatCount:
+            lit: 3
+        choices:
+          - menuTask:
+              name: Default Language
+              refId: Default Language_10
+              dtmf: digit_*
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - setLanguage:
+                      name: Set English Default
+                      language: en-us
+                  - jumpToMenu:
+                      name: Go to English Menu
+                      targetMenuRef: "/inboundCall/menus/menu[English Menu_2]"
+          - menuTask:
+              name: Select English
+              refId: Select English_11
+              dtmf: digit_1
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - setLanguage:
+                      name: Set English
+                      language: en-us
+                  - jumpToMenu:
+                      name: Go to English Menu
+                      targetMenuRef: "/inboundCall/menus/menu[English Menu_2]"
+          - menuTask:
+              name: Select Spanish
+              refId: Select Spanish_12
+              dtmf: digit_2
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - setLanguage:
+                      name: Set Spanish
+                      language: es-us
+                  - jumpToMenu:
+                      name: Go to Spanish Menu
+                      targetMenuRef: "/inboundCall/menus/menu[Spanish Menu_3]"
+        defaultChildMenuRef: "./choices/menuTask[Default Language_10]"
+
+    - menu:
+        name: English Menu
+        refId: English Menu_2
+        audio:
+          tts: "Thank you for choosing Claude Cars. Please hold while we connect you to an agent."
+        settingsMenu:
+          extensionDialingMaxDelay:
+            noValue: true
+          listenForExtensionDialing:
+            lit: false
+          menuSelectionTimeout:
+            lit:
+              seconds: 10
+          repeatCount:
+            lit: 1
+        choices:
+          - menuTask:
+              name: English Default
+              refId: English Default_20
+              dtmf: digit_*
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - transferToAcd:
+                      name: Transfer to US Queue
+                      targetQueue:
+                        lit:
+                          id: ed1d516d-a9c9-4594-9420-d3e574042d0b
+                          name: Claude_US_Queue
+                      preTransferAudio:
+                        tts: "Connecting you now. Please hold."
+                      failureTransferAudio:
+                        tts: "All agents are currently busy. Goodbye."
+                      priority:
+                        lit: 0
+                  - disconnect:
+                      name: End Call English
+        defaultChildMenuRef: "./choices/menuTask[English Default_20]"
+
+    - menu:
+        name: Spanish Menu
+        refId: Spanish Menu_3
+        audio:
+          tts: "Gracias por elegir Claude Cars. Por favor espere mientras le conectamos con un agente."
+        settingsMenu:
+          extensionDialingMaxDelay:
+            noValue: true
+          listenForExtensionDialing:
+            lit: false
+          menuSelectionTimeout:
+            lit:
+              seconds: 10
+          repeatCount:
+            lit: 1
+        choices:
+          - menuTask:
+              name: Spanish Default
+              refId: Spanish Default_30
+              dtmf: digit_*
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - transferToAcd:
+                      name: Transfer to India Queue
+                      targetQueue:
+                        lit:
+                          id: 13f15c0b-11dc-41b2-9a69-204056f3b310
+                          name: Claude_India_Queue
+                      preTransferAudio:
+                        tts: "Conectándole ahora. Por favor espere."
+                      failureTransferAudio:
+                        tts: "Todos los agentes están ocupados. Adiós."
+                      priority:
+                        lit: 0
+                  - disconnect:
+                      name: End Call Spanish
+        defaultChildMenuRef: "./choices/menuTask[Spanish Default_30]"
