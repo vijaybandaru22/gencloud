@@ -1,0 +1,28 @@
+voiceSurvey:
+  name: Claude_Cars_Voice_Survey
+  description: Post-call voice survey for Claude Cars - agent and call ratings
+  division: Claude_Exploration_Vijay
+  defaultLanguage: en-us
+  startUpRef: "/voiceSurvey/states/state[Initial State_1]"
+  surveyForm:
+    id: 76a9fbea-17b4-4fca-90bc-45fde3df3699
+  createNluFromSurveyForm: true
+  states:
+    - state:
+        name: Initial State
+        refId: Initial State_1
+        actions:
+          - askSurveyQuestion:
+              name: Agent Rating
+              surveyQuestion:
+                questionId: "1f290801-c4a9-4946-a110-7ec84909d2e9"
+          - askSurveyQuestion:
+              name: Overall Satisfaction
+              surveyQuestion:
+                questionId: "818923ba-9b72-462f-8880-a6c38842f2dc"
+          - askSurveyQuestion:
+              name: Recommend
+              surveyQuestion:
+                questionId: "1ce6ff92-af07-44c1-b67e-b21bc8127f22"
+          - disconnect:
+              name: End Survey

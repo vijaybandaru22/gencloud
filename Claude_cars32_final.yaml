@@ -1,0 +1,346 @@
+inboundCall:
+  name: Claude_cars32
+  description: Claude Cars - Bilingual Language Selection, Department Menu, Geographic Queue Routing
+  division: Claude_Exploration_Vijay
+  startUpRef: "/inboundCall/menus/menu[Language Menu_1]"
+  defaultLanguage: en-us
+  supportedLanguages:
+    en-us:
+      defaultLanguageSkill:
+        noValue: true
+      textToSpeech:
+        defaultEngine:
+          voice: Jill
+    es-us:
+      defaultLanguageSkill:
+        noValue: true
+      textToSpeech:
+        defaultEngine:
+          voice: Isabel
+  initialGreeting:
+    noValue: true
+  settingsActionDefaults:
+    callData:
+      processingPrompt:
+        noValue: true
+    callBridge:
+      processingPrompt:
+        noValue: true
+  settingsErrorHandling:
+    errorHandling:
+      disconnect:
+        none: true
+    preHandlingAudio:
+      tts: "An error has occurred. Goodbye."
+  settingsMenu:
+    extensionDialingMaxDelay:
+      lit:
+        seconds: 1
+    listenForExtensionDialing:
+      lit: false
+    menuSelectionTimeout:
+      lit:
+        seconds: 10
+    repeatCount:
+      lit: 3
+  settingsPrompts:
+    ensureAudioInPrompts: false
+  menus:
+    - menu:
+        name: Language Menu
+        refId: Language Menu_1
+        audio:
+          tts: "Welcome to Claude Cars. For English, press 1. Para Español, oprima 2."
+        settingsMenu:
+          extensionDialingMaxDelay:
+            noValue: true
+          listenForExtensionDialing:
+            lit: false
+          menuSelectionTimeout:
+            lit:
+              seconds: 10
+          repeatCount:
+            lit: 3
+        choices:
+          - menuTask:
+              name: Language Default
+              refId: Language Default_10
+              dtmf: digit_*
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - setLanguage:
+                      name: Set English Default
+                      language: en-us
+                  - jumpToMenu:
+                      name: Go to English Dept Menu
+                      targetMenuRef: "/inboundCall/menus/menu[English Dept Menu_2]"
+          - menuTask:
+              name: Select English
+              refId: Select English_11
+              dtmf: digit_1
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - setLanguage:
+                      name: Set Language English
+                      language: en-us
+                  - jumpToMenu:
+                      name: Go to English Menu
+                      targetMenuRef: "/inboundCall/menus/menu[English Dept Menu_2]"
+          - menuTask:
+              name: Select Spanish
+              refId: Select Spanish_12
+              dtmf: digit_2
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - setLanguage:
+                      name: Set Language Spanish
+                      language: es-us
+                  - jumpToMenu:
+                      name: Go to Spanish Menu
+                      targetMenuRef: "/inboundCall/menus/menu[Spanish Dept Menu_3]"
+        defaultChildMenuRef: "./choices/menuTask[Language Default_10]"
+
+    - menu:
+        name: English Dept Menu
+        refId: English Dept Menu_2
+        audio:
+          tts: "Thanks for choosing my flow. For Sales, press 1. For Services, press 2. For New Models, press 3. For a survey, press 4."
+        settingsMenu:
+          extensionDialingMaxDelay:
+            noValue: true
+          listenForExtensionDialing:
+            lit: false
+          menuSelectionTimeout:
+            lit:
+              seconds: 10
+          repeatCount:
+            lit: 3
+        choices:
+          - menuTask:
+              name: Dept Default EN
+              refId: Dept Default EN_20
+              dtmf: digit_*
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - jumpToTask:
+                      name: Route to Geographic Default EN
+                      targetTaskRef: "/inboundCall/tasks/task[Geographic Routing_40]"
+          - menuTask:
+              name: Sales EN
+              refId: Sales EN_21
+              dtmf: digit_1
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - jumpToTask:
+                      name: Route to Geographic Sales
+                      targetTaskRef: "/inboundCall/tasks/task[Geographic Routing_40]"
+          - menuTask:
+              name: Services EN
+              refId: Services EN_22
+              dtmf: digit_2
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - jumpToTask:
+                      name: Route to Geographic Services
+                      targetTaskRef: "/inboundCall/tasks/task[Geographic Routing_40]"
+          - menuTask:
+              name: New Models EN
+              refId: New Models EN_23
+              dtmf: digit_3
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - jumpToTask:
+                      name: Route to Geographic New Models
+                      targetTaskRef: "/inboundCall/tasks/task[Geographic Routing_40]"
+        defaultChildMenuRef: "./choices/menuTask[Dept Default EN_20]"
+
+    - menu:
+        name: Spanish Dept Menu
+        refId: Spanish Dept Menu_3
+        audio:
+          tts: "Gracias por elegir mi servicio. Para ventas, oprima 1. Para servicios, oprima 2. Para nuevos modelos, oprima 3."
+        settingsMenu:
+          extensionDialingMaxDelay:
+            noValue: true
+          listenForExtensionDialing:
+            lit: false
+          menuSelectionTimeout:
+            lit:
+              seconds: 10
+          repeatCount:
+            lit: 3
+        choices:
+          - menuTask:
+              name: Dept Default ES
+              refId: Dept Default ES_30
+              dtmf: digit_*
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - jumpToTask:
+                      name: Route to Geographic Default ES
+                      targetTaskRef: "/inboundCall/tasks/task[Geographic Routing_40]"
+          - menuTask:
+              name: Ventas ES
+              refId: Ventas ES_31
+              dtmf: digit_1
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - jumpToTask:
+                      name: Route to Geographic Ventas
+                      targetTaskRef: "/inboundCall/tasks/task[Geographic Routing_40]"
+          - menuTask:
+              name: Servicios ES
+              refId: Servicios ES_32
+              dtmf: digit_2
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - jumpToTask:
+                      name: Route to Geographic Servicios
+                      targetTaskRef: "/inboundCall/tasks/task[Geographic Routing_40]"
+          - menuTask:
+              name: Nuevos Modelos ES
+              refId: Nuevos Modelos ES_33
+              dtmf: digit_3
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - jumpToTask:
+                      name: Route to Geographic Nuevos Modelos
+                      targetTaskRef: "/inboundCall/tasks/task[Geographic Routing_40]"
+        defaultChildMenuRef: "./choices/menuTask[Dept Default ES_30]"
+
+  tasks:
+    - task:
+        name: Geographic Routing
+        refId: Geographic Routing_40
+        actions:
+          - decision:
+              name: Check US Number
+              condition:
+                exp: 'Left(Call.Ani, 2) == "+1"'
+              outputs:
+                "yes":
+                  actions:
+                    - jumpToTask:
+                        name: Go to US Queue Transfer
+                        targetTaskRef: "/inboundCall/tasks/task[US Queue Transfer_50]"
+                "no":
+                  actions:
+                    - decision:
+                        name: Check India Number
+                        condition:
+                          exp: 'Left(Call.Ani, 3) == "+91"'
+                        outputs:
+                          "yes":
+                            actions:
+                              - jumpToTask:
+                                  name: Go to India Queue Transfer
+                                  targetTaskRef: "/inboundCall/tasks/task[India Queue Transfer_60]"
+                          "no":
+                            actions:
+                              - jumpToTask:
+                                  name: Default to US Queue
+                                  targetTaskRef: "/inboundCall/tasks/task[US Queue Transfer_50]"
+
+    - task:
+        name: US Queue Transfer
+        refId: US Queue Transfer_50
+        actions:
+          - setParticipantData:
+              name: Set Agent Script US
+              attributes:
+                - attribute:
+                    name:
+                      lit: QueueName
+                    value:
+                      lit: "Claude_US_Queue"
+                - attribute:
+                    name:
+                      lit: CallerNumber
+                    value:
+                      exp: "Call.Ani"
+                - attribute:
+                    name:
+                      lit: CallerLocation
+                    value:
+                      lit: "United States"
+          - transferToAcd:
+              name: Transfer to Claude_US_Queue
+              targetQueue:
+                lit:
+                  id: ed1d516d-a9c9-4594-9420-d3e574042d0b
+                  name: Claude_US_Queue
+              postCallSurveyFlow:
+                lit:
+                  id: a0c88d4e-570a-40a6-8feb-8090869df003
+                  name: Claude_Cars_Voice_Survey
+              preTransferAudio:
+                tts: "Thanks for choosing my flow. Connecting you to our US team. Please hold."
+              failureTransferAudio:
+                tts: "We are sorry, all US representatives are currently busy. Thanks for choosing my flow. Goodbye."
+              priority:
+                lit: 0
+          - disconnect:
+              name: End Call US
+
+    - task:
+        name: India Queue Transfer
+        refId: India Queue Transfer_60
+        actions:
+          - setParticipantData:
+              name: Set Agent Script India
+              attributes:
+                - attribute:
+                    name:
+                      lit: QueueName
+                    value:
+                      lit: "Claude_India_Queue"
+                - attribute:
+                    name:
+                      lit: CallerNumber
+                    value:
+                      exp: "Call.Ani"
+                - attribute:
+                    name:
+                      lit: CallerLocation
+                    value:
+                      lit: "India"
+          - transferToAcd:
+              name: Transfer to Claude_India_Queue
+              targetQueue:
+                lit:
+                  id: 13f15c0b-11dc-41b2-9a69-204056f3b310
+                  name: Claude_India_Queue
+              postCallSurveyFlow:
+                lit:
+                  id: a0c88d4e-570a-40a6-8feb-8090869df003
+                  name: Claude_Cars_Voice_Survey
+              preTransferAudio:
+                tts: "Thanks for choosing my flow. Connecting you to our India team. Please hold."
+              failureTransferAudio:
+                tts: "We are sorry, all India representatives are currently busy. Thanks for choosing my flow. Goodbye."
+              priority:
+                lit: 0
+          - disconnect:
+              name: End Call India
