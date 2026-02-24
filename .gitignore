@@ -1,0 +1,61 @@
+# Node
+node_modules/
+node20/
+node18/
+node20_global/
+node18_global/
+node20_backup_old/
+*.zip
+*.tgz
+
+# Sensitive / personal
+.ssh/
+AppData/
+NTUSER.DAT*
+ntuser.*
+desktop.ini
+
+# Local system dirs
+3D Objects/
+Contacts/
+CrossDevice/
+Desktop/
+Documents/
+Downloads/
+Favorites/
+Links/
+Music/
+OneDriveCloudTemp/
+OneDrive*/
+Saved Games/
+Searches/
+Tracing/
+Videos/
+Muse Hub/
+
+# Binaries
+terraform.exe
+archy/
+archyHome/
+*.exe
+*.dll
+
+# Logs / temp
+*.png
+*.log
+debug/
+vjtest/
+zoom-cli/
+
+# Cache
+.cache/
+.config/
+.windows-build-tools/
+.vscode/
+
+# Claude / tool config
+.claude.json
+.claude.json.backup
+.archy
+.archy_config
+.genesys-flow-tool.json

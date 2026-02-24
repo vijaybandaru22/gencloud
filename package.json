@@ -1,0 +1,21 @@
+{
+  "scripts": {
+    "lint": "node node_modules/eslint/bin/eslint.js *.js",
+    "lint:fix": "node node_modules/eslint/bin/eslint.js --fix *.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.76.0",
+    "axios": "^1.13.5",
+    "claude": "^0.1.2",
+    "js-yaml": "^4.1.1",
+    "puppeteer": "^24.37.3",
+    "purecloud-flow-scripting-api-sdk-javascript": "^0.63.5",
+    "purecloud-platform-client-v2": "^245.1.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.2",
+    "globals": "^17.3.0"
+  }
+}
