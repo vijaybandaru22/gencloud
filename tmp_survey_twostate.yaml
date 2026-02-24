@@ -1,0 +1,21 @@
+surveyInvite:
+  name: Claude_Cars_Survey_Invite
+  description: Post-call web survey invite for Claude Cars
+  division: Claude_Exploration_Vijay
+  defaultLanguage: en-us
+  startUpRef: "/surveyInvite/states/state[Check Condition_1]"
+  states:
+    - state:
+        name: Check Condition
+        refId: Check Condition_1
+        actions:
+          - changeState:
+              name: Always Send Survey
+              targetStateRef: "/surveyInvite/states/state[Send Invite_2]"
+    - state:
+        name: Send Invite
+        refId: Send Invite_2
+        actions:
+          - updateData:
+              name: Placeholder
+              statements: []

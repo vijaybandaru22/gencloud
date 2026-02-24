@@ -1,0 +1,23 @@
+surveyInvite:
+  name: Claude_Cars_Survey_Invite
+  description: Post-call web survey invite for Claude Cars
+  division: Claude_Exploration_Vijay
+  defaultLanguage: en-us
+  startUpRef: "/surveyInvite/states/state[Initial State_1]"
+  states:
+    - state:
+        name: Initial State
+        refId: Initial State_1
+        actions:
+          - completeSurveyInvite:
+              name: Send Survey Invite
+              targetAddress:
+                exp: "Call.Ani"
+              inviteSubject:
+                lit: "Your Claude Cars Customer Survey"
+              inviteBody:
+                lit: "Thank you for contacting Claude Cars! Please take a moment to share your feedback."
+              reminderSubject:
+                lit: "Reminder: Your Claude Cars Customer Survey"
+              reminderBody:
+                lit: "We noticed you haven't completed our survey yet. Please share your feedback."

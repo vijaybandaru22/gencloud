@@ -1,0 +1,21 @@
+surveyInvite:
+  name: Claude_Cars_Survey_Invite
+  description: Post-call web survey invite for Claude Cars — sent after voice interactions
+  division: Claude_Exploration_Vijay
+  defaultLanguage: en-us
+
+  surveyForm:
+    lit:
+      id: 76a9fbea-17b4-4fca-90bc-45fde3df3699
+      name: Claude_Cars_Quality_Survey
+
+  sendingDomain: genesyscloud.com
+
+  inviteIdentifiers:
+    - customerIdentifier:
+        emailAddress:
+          exp: "Call.CustomerDefinedVariable1"
+      preferredDeliveryChannel: email
+
+  logic:
+    always: true

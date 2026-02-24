@@ -1,0 +1,242 @@
+inboundCall:
+  name: Claude_Cars_Survey
+  description: Post-call survey - agent knowledge rating 0-5
+  division: Claude_Exploration_Vijay
+
+  startUpRef: "/inboundCall/menus/menu[Survey Question_10]"
+
+  defaultLanguage: en-us
+  supportedLanguages:
+    en-us:
+      defaultLanguageSkill:
+        noValue: true
+      textToSpeech:
+        defaultEngine:
+          voice: Jill
+
+  initialGreeting:
+    noValue: true
+
+  settingsMenu:
+    extensionDialingMaxDelay:
+      lit:
+        seconds: 1
+    listenForExtensionDialing:
+      lit: false
+    menuSelectionTimeout:
+      lit:
+        seconds: 8
+    repeatCount:
+      lit: 2
+
+  settingsPrompts:
+    ensureAudioInPrompts: false
+
+  settingsErrorHandling:
+    errorHandling:
+      disconnect:
+        none: true
+    preHandlingAudio:
+      tts: "An error occurred. Thank you for calling Claude Cars. Goodbye."
+
+  menus:
+    - menu:
+        name: Survey Question
+        refId: Survey Question_10
+        audio:
+          tts: "Thank you for calling Claude Cars. Before you go, we would love your feedback. Please rate the agent's knowledge and their ability to answer all your questions. Press 0 for very poor, 1 for poor, 2 for below average, 3 for average, 4 for good, or press 5 for excellent."
+        settingsMenu:
+          extensionDialingMaxDelay:
+            noValue: true
+          listenForExtensionDialing:
+            lit: false
+          menuSelectionTimeout:
+            lit:
+              seconds: 8
+          repeatCount:
+            lit: 2
+        choices:
+          - menuTask:
+              name: Rating 0
+              refId: Rating 0_11
+              dtmf: digit_0
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - setParticipantData:
+                      name: Save Rating 0
+                      attributes:
+                        - attribute:
+                            name:
+                              lit: SurveyRating
+                            value:
+                              lit: "0"
+                        - attribute:
+                            name:
+                              lit: SurveyQuestion
+                            value:
+                              lit: "Agent knowledge and ability to answer questions"
+                  - playAudio:
+                      name: Confirm Rating 0
+                      audio:
+                        tts: "You rated us 0 - very poor. We are sorry to hear that and will use your feedback to improve. Thank you for calling Claude Cars. Goodbye."
+                  - disconnect:
+                      name: End Survey
+
+          - menuTask:
+              name: Rating 1
+              refId: Rating 1_12
+              dtmf: digit_1
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - setParticipantData:
+                      name: Save Rating 1
+                      attributes:
+                        - attribute:
+                            name:
+                              lit: SurveyRating
+                            value:
+                              lit: "1"
+                        - attribute:
+                            name:
+                              lit: SurveyQuestion
+                            value:
+                              lit: "Agent knowledge and ability to answer questions"
+                  - playAudio:
+                      name: Confirm Rating 1
+                      audio:
+                        tts: "You rated us 1 - poor. Thank you for your feedback. We will work to do better. Thank you for calling Claude Cars. Goodbye."
+                  - disconnect:
+                      name: End Survey
+
+          - menuTask:
+              name: Rating 2
+              refId: Rating 2_13
+              dtmf: digit_2
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - setParticipantData:
+                      name: Save Rating 2
+                      attributes:
+                        - attribute:
+                            name:
+                              lit: SurveyRating
+                            value:
+                              lit: "2"
+                        - attribute:
+                            name:
+                              lit: SurveyQuestion
+                            value:
+                              lit: "Agent knowledge and ability to answer questions"
+                  - playAudio:
+                      name: Confirm Rating 2
+                      audio:
+                        tts: "You rated us 2 - below average. Thank you for your feedback. We appreciate your time. Thank you for calling Claude Cars. Goodbye."
+                  - disconnect:
+                      name: End Survey
+
+          - menuTask:
+              name: Rating 3
+              refId: Rating 3_14
+              dtmf: digit_3
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - setParticipantData:
+                      name: Save Rating 3
+                      attributes:
+                        - attribute:
+                            name:
+                              lit: SurveyRating
+                            value:
+                              lit: "3"
+                        - attribute:
+                            name:
+                              lit: SurveyQuestion
+                            value:
+                              lit: "Agent knowledge and ability to answer questions"
+                  - playAudio:
+                      name: Confirm Rating 3
+                      audio:
+                        tts: "You rated us 3 - average. Thank you for your feedback. We are always working to improve. Thank you for calling Claude Cars. Goodbye."
+                  - disconnect:
+                      name: End Survey
+
+          - menuTask:
+              name: Rating 4
+              refId: Rating 4_15
+              dtmf: digit_4
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - setParticipantData:
+                      name: Save Rating 4
+                      attributes:
+                        - attribute:
+                            name:
+                              lit: SurveyRating
+                            value:
+                              lit: "4"
+                        - attribute:
+                            name:
+                              lit: SurveyQuestion
+                            value:
+                              lit: "Agent knowledge and ability to answer questions"
+                  - playAudio:
+                      name: Confirm Rating 4
+                      audio:
+                        tts: "You rated us 4 - good. Thank you for your positive feedback. We are glad we could help. Thank you for calling Claude Cars. Goodbye."
+                  - disconnect:
+                      name: End Survey
+
+          - menuTask:
+              name: Rating 5
+              refId: Rating 5_16
+              dtmf: digit_5
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - setParticipantData:
+                      name: Save Rating 5
+                      attributes:
+                        - attribute:
+                            name:
+                              lit: SurveyRating
+                            value:
+                              lit: "5"
+                        - attribute:
+                            name:
+                              lit: SurveyQuestion
+                            value:
+                              lit: "Agent knowledge and ability to answer questions"
+                  - playAudio:
+                      name: Confirm Rating 5
+                      audio:
+                        tts: "You rated us 5 - excellent! Thank you so much for the outstanding rating. We are thrilled we could provide you with excellent service. Thank you for calling Claude Cars. Goodbye."
+                  - disconnect:
+                      name: End Survey
+
+          - menuTask:
+              name: No Input Default
+              refId: No Input Default_17
+              dtmf: digit_*
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - playAudio:
+                      name: No Input Message
+                      audio:
+                        tts: "We did not receive your input. Thank you for calling Claude Cars. Have a great day. Goodbye."
+                  - disconnect:
+                      name: End Survey No Input
+
+        defaultChildMenuRef: "./choices/menuTask[No Input Default_17]"

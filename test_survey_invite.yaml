@@ -1,0 +1,14 @@
+surveyInvite:
+  name: Claude_Cars_Survey_Invite
+  description: Post-call web survey invite for Claude Cars
+  division: Claude_Exploration_Vijay
+  defaultLanguage: en-us
+  startUpRef: "/surveyInvite/tasks/task[Initial Task_1]"
+
+  tasks:
+    - task:
+        name: Initial Task
+        refId: Initial Task_1
+        actions:
+          - setSurveyInviteConfiguration:
+              name: Configure Survey
