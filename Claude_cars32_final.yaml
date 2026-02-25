@@ -1,8 +1,8 @@
 inboundCall:
   name: Claude_cars32
-  description: Claude Cars - Bilingual Language Selection, Department Menu, Geographic Queue Routing
+  description: "Claude Cars - Bilingual Language Selection (EN/ES), Department Menu (Sales/Services/New Models), Geographic Queue Routing (US/India), Data Table Upfront Message, Schedule Group Business Hours. UPDATED 2026-02-25: Added schedule group (Claude_Cars_Schedule_Group) - Mon-Fri 9AM-5PM, Sat 10AM-2PM Pacific, Sun closed, Holidays closed, Emergency group override."
   division: Claude_Exploration_Vijay
-  startUpRef: "/inboundCall/menus/menu[Language Menu_1]"
+  startUpRef: "/inboundCall/tasks/task[Business Hours Check_80]"
   defaultLanguage: en-us
   supportedLanguages:
     en-us:
@@ -45,6 +45,15 @@ inboundCall:
       lit: 3
   settingsPrompts:
     ensureAudioInPrompts: false
+  variables:
+    - booleanVariable:
+        name: Flow.UpfrontActive
+        initialValue:
+          lit: false
+    - stringVariable:
+        name: Flow.UpfrontMessage
+        initialValue:
+          noValue: true
   menus:
     - menu:
         name: Language Menu
@@ -110,7 +119,7 @@ inboundCall:
         name: English Dept Menu
         refId: English Dept Menu_2
         audio:
-          tts: "Thanks for choosing my flow. For Sales, press 1. For Services, press 2. For New Models, press 3. For a survey, press 4."
+          tts: "Thanks for choosing my flow. For Sales, press 1. For Services, press 2. For New Models, press 3."
         settingsMenu:
           extensionDialingMaxDelay:
             noValue: true
@@ -231,6 +240,100 @@ inboundCall:
         defaultChildMenuRef: "./choices/menuTask[Dept Default ES_30]"
 
   tasks:
+    - task:
+        name: Business Hours Check
+        refId: Business Hours Check_80
+        actions:
+          - evaluateScheduleGroup:
+              name: Check Business Hours
+              scheduleGroup:
+                lit:
+                  id: 79e337b9-8e2c-4bb2-b26d-948c5f65e07c
+                  name: Claude_Cars_Schedule_Group
+              outputs:
+                open:
+                  actions:
+                    - jumpToTask:
+                        name: Go to Upfront Check
+                        targetTaskRef: "/inboundCall/tasks/task[Upfront Message Check_70]"
+                closed:
+                  actions:
+                    - playAudio:
+                        name: Play Closed Hours Message
+                        audio:
+                          tts: "Thank you for calling Claude Cars. Our offices are currently closed. Our business hours are Monday through Friday, 9 AM to 5 PM, and Saturday 10 AM to 2 PM, Pacific Time. We are closed on Sundays and holidays. Please call back during our business hours. Goodbye."
+                    - disconnect:
+                        name: Disconnect Closed
+                holiday:
+                  actions:
+                    - playAudio:
+                        name: Play Holiday Message
+                        audio:
+                          tts: "Thank you for calling Claude Cars. We are closed today in observance of a holiday. Please call back on our next business day. Our hours are Monday through Friday 9 AM to 5 PM, and Saturday 10 AM to 2 PM, Pacific Time. Goodbye."
+                    - disconnect:
+                        name: Disconnect Holiday
+                emergency:
+                  actions:
+                    - playAudio:
+                        name: Play Emergency Message
+                        audio:
+                          tts: "Thank you for calling Claude Cars. We are temporarily closed due to an emergency situation. Please try again later. We apologize for any inconvenience. Goodbye."
+                    - disconnect:
+                        name: Disconnect Emergency
+
+    - task:
+        name: Upfront Message Check
+        refId: Upfront Message Check_70
+        actions:
+          - dataTableLookup:
+              name: Lookup Upfront Config
+              lookupValue:
+                lit: UPFRONT MESSAGING
+              dataTable:
+                VJ_claudeDatatable:
+                  foundOutputs:
+                    Active:
+                      var: Flow.UpfrontActive
+                    Message:
+                      var: Flow.UpfrontMessage
+                  failureOutputs:
+                    errorType:
+                      noValue: true
+                    errorMessage:
+                      noValue: true
+              outputs:
+                found:
+                  actions:
+                    - decision:
+                        name: Check If Upfront Is Active
+                        condition:
+                          exp: Flow.UpfrontActive
+                        outputs:
+                          "yes":
+                            actions:
+                              - playAudio:
+                                  name: Play Upfront Message
+                                  audio:
+                                    exp: "AudioPlaybackOptions(ToAudioTTS(Flow.UpfrontMessage), true)"
+                              - jumpToMenu:
+                                  name: Go to Language Menu After Upfront
+                                  targetMenuRef: "/inboundCall/menus/menu[Language Menu_1]"
+                          "no":
+                            actions:
+                              - jumpToMenu:
+                                  name: Skip Upfront Go to Language Menu
+                                  targetMenuRef: "/inboundCall/menus/menu[Language Menu_1]"
+                notFound:
+                  actions:
+                    - jumpToMenu:
+                        name: Go to Language Menu Not Found
+                        targetMenuRef: "/inboundCall/menus/menu[Language Menu_1]"
+                failure:
+                  actions:
+                    - jumpToMenu:
+                        name: Go to Language Menu Failure
+                        targetMenuRef: "/inboundCall/menus/menu[Language Menu_1]"
+
     - task:
         name: Geographic Routing
         refId: Geographic Routing_40

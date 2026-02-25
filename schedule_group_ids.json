@@ -1,0 +1,10 @@
+{
+  "weekdayScheduleId": "4487a794-2c9d-4243-9d43-387f2e354140",
+  "weekdayScheduleName": "Claude_Cars_WeekDay_Hours",
+  "saturdayScheduleId": "7b382f3d-af07-471e-83e3-0e21b4e2eb01",
+  "saturdayScheduleName": "Claude_Cars_Saturday_Hours",
+  "emergencyGroupId": "2ad23901-745e-4092-aea9-6bc6d54c68db",
+  "emergencyGroupName": "Claude_Cars_Emergency",
+  "scheduleGroupId": "79e337b9-8e2c-4bb2-b26d-948c5f65e07c",
+  "scheduleGroupName": "Claude_Cars_Schedule_Group"
+}

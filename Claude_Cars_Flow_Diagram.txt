@@ -1,0 +1,243 @@
+═══════════════════════════════════════════════════════════════════════════════
+CLAUDE CARS CALL FLOW - VISUAL DIAGRAM
+Flow: Claude_cars32  |  v15.0  |  Updated: 2026-02-25
+Division: Claude_Exploration_Vijay  |  Org: Waterfield  |  Region: US West 2
+═══════════════════════════════════════════════════════════════════════════════
+
+MAIN INBOUND FLOW STRUCTURE:
+═══════════════════════════════════════════════════════════════════════════════
+
+[Caller Dials DID]
++1 (773) 906-3291 → IVR Config: Claude_VJ
+        │
+        ▼
+┌───────────────────────────────────────────────────────────────────────────┐
+│  ⏰  BUSINESS HOURS CHECK  (evaluateScheduleGroup)                        │
+│      Schedule Group : Claude_Cars_Schedule_Group                          │
+│      ID             : 79e337b9-8e2c-4bb2-b26d-948c5f65e07c               │
+│      Timezone       : America/Los_Angeles  (Pacific Time)                 │
+│      Open Schedules : Mon–Fri 9:00 AM – 5:00 PM                          │
+│                       Saturday  10:00 AM – 2:00 PM                       │
+│      Closed         : Sunday (not in open schedules)                     │
+│      Holiday sched  : Add via Genesys Cloud UI → Schedule Group           │
+│      Emergency      : Claude_Cars_Emergency (toggle Active in UI)         │
+└───────────────────────────────────────────────────────────────────────────┘
+        │
+        ├─── CLOSED ──────► [Play TTS: "Thank you for calling Claude Cars.
+        │                    Our offices are currently closed. Hours: Mon–Fri
+        │                    9 AM–5 PM, Sat 10 AM–2 PM Pacific. Goodbye."]
+        │                              │
+        │                              ▼
+        │                         [Disconnect]
+        │
+        ├─── HOLIDAY ─────► [Play TTS: "We are closed today in observance
+        │                    of a holiday. Please call back on our next
+        │                    business day. Hours: Mon–Fri 9AM–5PM,
+        │                    Sat 10AM–2PM Pacific. Goodbye."]
+        │                              │
+        │                              ▼
+        │                         [Disconnect]
+        │
+        ├─── EMERGENCY ───► [Play TTS: "We are temporarily closed due to
+        │                    an emergency situation. Please try again later.
+        │                    We apologize for any inconvenience. Goodbye."]
+        │                              │
+        │                              ▼
+        │                         [Disconnect]
+        │
+        └─── OPEN ─────────────────────────────────────────────┐
+                                                               │
+                                                               ▼
+                              ┌────────────────────────────────────────────┐
+                              │  📋  UPFRONT MESSAGE CHECK                 │
+                              │      DataTable  : VJ_claudeDatatable       │
+                              │      Key        : "UPFRONT MESSAGING"      │
+                              │      Variables  : Flow.UpfrontActive (bool)│
+                              │                   Flow.UpfrontMessage (str)│
+                              │  (Supervisors set Active=true in Datatable │
+                              │   and update Message to enable broadcast)  │
+                              └────────────────────────────────────────────┘
+                                             │
+                                             ├── Active = TRUE
+                                             │     ↓
+                                             │   [Play Upfront TTS Message]
+                                             │   (from Flow.UpfrontMessage)
+                                             │     │
+                                             └── Active = FALSE  ──────┐
+                                             │                         │
+                                             └─ Not Found / Failure ───┘
+                                                              │
+                                                              ▼
+                                        ┌────────────────────────────────┐
+                                        │  🌐  LANGUAGE SELECTION MENU   │
+                                        │  "Welcome to Claude Cars."     │
+                                        │  Press 1 for English           │
+                                        │  Oprima 2 para Español         │
+                                        │  TTS: Jill (EN) / Isabel (ES) │
+                                        └────────────────────────────────┘
+                                                       │
+                                          ┌────────────┼────────────┐
+                                          ↓            ↓            ↓
+                                      digit_1       default      digit_2
+                                     (English)    (English)     (Spanish)
+                                          │                         │
+                                   Set lang: en-us          Set lang: es-us
+                                          ↓                         ↓
+                                ┌──────────────────┐   ┌──────────────────────┐
+                                │ English Dept Menu│   │  Spanish Dept Menu   │
+                                │ 1-Sales          │   │  1-Ventas            │
+                                │ 2-Services       │   │  2-Servicios         │
+                                │ 3-New Models     │   │  3-Nuevos Modelos    │
+                                └──────────────────┘   └──────────────────────┘
+                                          │                         │
+                                          └──────────┬──────────────┘
+                                                     ↓
+                                    Any selection → Geographic Routing
+                                                     │
+                                        ┌────────────────────────┐
+                                        │  📍  GEOGRAPHIC ROUTING │
+                                        │  Left(Call.Ani, 2)="+1"│
+                                        │  Left(Call.Ani, 3)="+91"│
+                                        └────────────────────────┘
+                                                     │
+                                          ┌──────────┴──────────┐
+                                          ↓                     ↓
+                                     ANI = +1               ANI = +91
+                                   (US / default)         (India)
+                                          │                     │
+                              ┌───────────────┐   ┌───────────────────┐
+                              │ Set Screen Pop│   │  Set Screen Pop   │
+                              │ QueueName:    │   │  QueueName:       │
+                              │  Claude_US_Q  │   │   Claude_India_Q  │
+                              │ CallerNumber: │   │  CallerNumber:    │
+                              │  Call.Ani     │   │   Call.Ani        │
+                              │ CallerLocation│   │  CallerLocation:  │
+                              │  United States│   │   India           │
+                              └───────────────┘   └───────────────────┘
+                                          │                     │
+                                          ↓                     ↓
+                              ┌───────────────────┐ ┌─────────────────────┐
+                              │ Transfer to ACD   │ │  Transfer to ACD    │
+                              │ Claude_US_Queue   │ │  Claude_India_Queue │
+                              │ + Voice Survey    │ │  + Voice Survey     │
+                              │  (Claude_Cars_    │ │   (Claude_Cars_     │
+                              │   Voice_Survey)   │ │    Voice_Survey)    │
+                              └───────────────────┘ └─────────────────────┘
+                                          │                     │
+                                          └──────────┬──────────┘
+                                                     ↓
+                                             [In-Queue Experience]
+                                              (PIQ/EWT Announcements
+                                               + Hold Music Loop)
+                                                     │
+                                                     ↓
+                                            [Agent Answers]
+                                         Screen Pop shows:
+                                         • QueueName
+                                         • CallerNumber (ANI)
+                                         • CallerLocation
+                                                     │
+                                                     ↓
+                                     ┌───────────────────────────────┐
+                                     │  POST-CALL VOICE SURVEY       │
+                                     │  Claude_Cars_Voice_Survey v3.0│
+                                     │  Q1: Agent Rating (1–5)       │
+                                     │  Q2: Overall Satisfaction(1–5)│
+                                     │  TTS: Genesys TTS / Jill      │
+                                     └───────────────────────────────┘
+                                                     │
+                                                     ▼
+                                               [Disconnect]
+
+
+═══════════════════════════════════════════════════════════════════════════════
+SCHEDULE GROUP CONFIGURATION:
+═══════════════════════════════════════════════════════════════════════════════
+
+  Schedule Group : Claude_Cars_Schedule_Group
+  ID             : 79e337b9-8e2c-4bb2-b26d-948c5f65e07c
+  Timezone       : America/Los_Angeles  (Pacific, DST-aware)
+
+  ┌──────────────┬────────────────────────────────────────────────────────┐
+  │  Day         │  Hours                    │  Status                    │
+  ├──────────────┼───────────────────────────┼────────────────────────────┤
+  │  Monday      │  9:00 AM – 5:00 PM        │  OPEN (WeekDay schedule)   │
+  │  Tuesday     │  9:00 AM – 5:00 PM        │  OPEN                      │
+  │  Wednesday   │  9:00 AM – 5:00 PM        │  OPEN                      │
+  │  Thursday    │  9:00 AM – 5:00 PM        │  OPEN                      │
+  │  Friday      │  9:00 AM – 5:00 PM        │  OPEN                      │
+  │  Saturday    │  10:00 AM – 2:00 PM       │  OPEN (Saturday schedule)  │
+  │  Sunday      │  —                        │  CLOSED                    │
+  │  Holidays    │  Add via Genesys UI       │  HOLIDAY (when configured) │
+  │  Emergency   │  Toggle Claude_Cars_Emerg │  EMERGENCY (when active)   │
+  └──────────────┴───────────────────────────┴────────────────────────────┘
+
+  Schedules:
+  • Claude_Cars_WeekDay_Hours   ID: 4487a794-2c9d-4243-9d43-387f2e354140
+  • Claude_Cars_Saturday_Hours  ID: 7b382f3d-af07-471e-83e3-0e21b4e2eb01
+  • Claude_Cars_Emergency        ID: 2ad23901-745e-4092-aea9-6bc6d54c68db
+
+  To ACTIVATE Emergency:
+    Genesys Cloud UI → Admin → Architect → Emergency Groups
+    → Claude_Cars_Emergency → toggle Active ON
+
+  To ADD Holidays:
+    Genesys Cloud UI → Admin → Architect → Schedules
+    → Create a schedule for the holiday date
+    → Add it to Claude_Cars_Schedule_Group → holidaySchedules
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FLOW CALL PATH SUMMARY (ordered steps):
+═══════════════════════════════════════════════════════════════════════════════
+
+  1.  Caller dials DID → IVR assigns Claude_cars32 flow
+  2.  Business Hours Check  (NEW - evaluateScheduleGroup)
+        → CLOSED    : Play closed message → Disconnect
+        → HOLIDAY   : Play holiday message → Disconnect
+        → EMERGENCY : Play emergency message → Disconnect
+        → OPEN      : Continue to step 3
+  3.  Upfront Message Check  (DataTable lookup VJ_claudeDatatable)
+        → Active=true  : Play supervisor broadcast message
+        → Otherwise    : Skip straight to Language Menu
+  4.  Language Selection Menu  (1=English, 2=Español, default=English)
+  5.  Department Menu  (1=Sales/Ventas, 2=Services/Servicios, 3=New Models)
+  6.  Geographic Routing  (ANI prefix +1 → US, +91 → India, default → US)
+  7.  Set Participant Data  (QueueName, CallerNumber, CallerLocation)
+  8.  Transfer to ACD  (Claude_US_Queue or Claude_India_Queue + survey link)
+  9.  In-Queue Experience  (PIQ/EWT + Hold Music loop)
+  10. Agent Connects  (Screen pop: Queue, ANI, Location)
+  11. Post-Call Voice Survey  (Claude_Cars_Voice_Survey v3.0)
+        Q1: Agent Rating (1–5)
+        Q2: Overall Satisfaction (1–5)
+  12. Disconnect
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FAILURE / ERROR PATHS:
+═══════════════════════════════════════════════════════════════════════════════
+
+  No Language Input     : Retry 3× (10-sec timeout) → Disconnect
+  No Menu Selection     : Retry 3× (10-sec timeout) → Disconnect
+  Queue Transfer Fail   : Play failure message → Disconnect
+  DataTable Lookup Fail : Skip upfront message → Language Menu (graceful)
+  Error Handler         : "An error has occurred. Goodbye." → Disconnect
+
+
+═══════════════════════════════════════════════════════════════════════════════
+FLOW OBJECT INVENTORY:
+═══════════════════════════════════════════════════════════════════════════════
+
+  Inbound Flow  : Claude_cars32            5796d427-8c0b-455f-8471-38db03907764  v15.0
+  Survey Flow   : Claude_Cars_Voice_Survey a0c88d4e-570a-40a6-8feb-8090869df003  v3.0
+  US Queue      : Claude_US_Queue          ed1d516d-a9c9-4594-9420-d3e574042d0b
+  India Queue   : Claude_India_Queue       13f15c0b-11dc-41b2-9a69-204056f3b310
+  Data Table    : VJ_claudeDatatable       a698670c-8b83-4ddb-af04-04f67eee0c78
+  Schedule Grp  : Claude_Cars_Sched_Group  79e337b9-8e2c-4bb2-b26d-948c5f65e07c
+  Weekday Sched : Claude_Cars_WeekDay      4487a794-2c9d-4243-9d43-387f2e354140
+  Saturday Sched: Claude_Cars_Saturday     7b382f3d-af07-471e-83e3-0e21b4e2eb01
+  Emergency Grp : Claude_Cars_Emergency    2ad23901-745e-4092-aea9-6bc6d54c68db
+
+═══════════════════════════════════════════════════════════════════════════════
+END OF DIAGRAM  |  Claude_cars32 v15.0  |  2026-02-25
+═══════════════════════════════════════════════════════════════════════════════

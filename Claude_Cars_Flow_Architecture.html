@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Claude Cars – Genesys Cloud Architect Flow Diagram</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; color: #1a202c; }
+
+  h1 { text-align: center; padding: 24px 0 4px; font-size: 22px; color: #1a365d; letter-spacing: 0.5px; }
+  .subtitle { text-align: center; font-size: 12px; color: #718096; margin-bottom: 28px; }
+
+  .diagram { display: flex; flex-direction: column; align-items: center; gap: 0; padding: 0 24px 40px; }
+
+  /* ── Section labels ── */
+  .section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    color: #fff; padding: 4px 18px; border-radius: 20px; margin-bottom: 8px; display: inline-block;
+  }
+  .label-inbound  { background: #2b6cb0; }
+  .label-schedule { background: #b45309; }
+  .label-inqueue  { background: #276749; }
+  .label-queue    { background: #744210; }
+  .label-survey   { background: #6b21a8; }
+
+  /* ── Box styles ── */
+  .box {
+    border-radius: 8px; padding: 9px 16px; font-size: 12px; font-weight: 600;
+    text-align: center; position: relative; white-space: nowrap; min-width: 160px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  }
+  .box-start    { background: #2d3748; color: #fff; border-radius: 50px; }
+  .box-menu     { background: #ebf8ff; border: 2px solid #3182ce; color: #1a365d; }
+  .box-decision { background: #fffff0; border: 2px solid #d69e2e; color: #744210;
+                  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+                  width: 160px; height: 72px; display: flex; align-items: center; justify-content: center;
+                  padding: 0; font-size: 11px; }
+  .box-transfer { background: #fff5f5; border: 2px solid #e53e3e; color: #742a2a; }
+  .box-script   { background: #faf5ff; border: 2px solid #805ad5; color: #553c9a; }
+  .box-queue    { background: #fffaf0; border: 2px solid #dd6b20; color: #7b341e; min-width: 180px; }
+  .box-inqueue  { background: #f0fff4; border: 2px solid #38a169; color: #276749; min-width: 200px; }
+  .box-loop     { background: #e6fffa; border: 2px dashed #319795; color: #234e52;
+                  border-radius: 12px; padding: 14px 18px; min-width: 220px; font-size: 11px; }
+  .box-survey   { background: #faf5ff; border: 2px solid #7c3aed; color: #4c1d95;
+                  border-radius: 12px; padding: 14px 18px; min-width: 260px; font-size: 11px; }
+  .box-end      { background: #2d3748; color: #fff; border-radius: 50px; }
+  .box-upfront  { background: #ecfdf5; border: 2px solid #10b981; color: #064e3b; min-width: 240px; }
+
+  /* ── Arrows ── */
+  .arrow { display: flex; flex-direction: column; align-items: center; }
+  .arrow-line { width: 2px; background: #a0aec0; }
+  .arrow-head { width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 10px solid #a0aec0; }
+
+  /* ── Row / Column helpers ── */
+  .row { display: flex; align-items: flex-start; gap: 20px; justify-content: center; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 0; }
+
+  /* ── Loop / Survey internals ── */
+  .loop-title   { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: #234e52; }
+  .survey-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; color: #4c1d95; }
+  .loop-step { display: flex; align-items: center; gap: 6px; margin: 3px 0; font-size: 11px; }
+  .step-num  { background: #319795; color: #fff; border-radius: 50%; width: 18px; height: 18px;
+               display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .step-num-s { background: #7c3aed; color: #fff; border-radius: 50%; width: 18px; height: 18px;
+                display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .loop-arrow   { font-size: 18px; color: #319795; margin-top: 6px; }
+
+  /* ── Script box internals ── */
+  .script-title { font-weight: 700; font-size: 11px; margin-bottom: 4px; }
+  .script-attr  { font-size: 10px; display: flex; gap: 4px; margin: 2px 0; }
+  .attr-key     { color: #553c9a; font-weight: 600; }
+  .attr-val     { color: #2d3748; }
+
+  /* ── TTS voice chip ── */
+  .tts-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #e0f2fe; border: 1px solid #0284c7; border-radius: 12px;
+    padding: 2px 8px; font-size: 10px; font-weight: 600; color: #0369a1; margin: 3px 2px 0;
+  }
+
+  /* ── Badge ── */
+  .badge { font-size: 9px; background: #e2e8f0; color: #4a5568; border-radius: 10px;
+           padding: 1px 6px; margin-left: 6px; font-weight: 600; vertical-align: middle; }
+
+  /* ── Legend ── */
+  .legend { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+            padding: 12px 20px; background: #fff; border-radius: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1); margin: 0 auto 28px; max-width: 900px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+  .legend-dot  { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+
+  /* ── Two-column section ── */
+  .iq-section { display: flex; gap: 40px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
+  .iq-col { display: flex; flex-direction: column; align-items: center; gap: 0; }
+
+  /* ── Rating grid ── */
+  .rating-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 8px; }
+  .rating-cell {
+    background: #ede9fe; border: 1px solid #c4b5fd; border-radius: 6px;
+    padding: 4px 6px; text-align: center; font-size: 10px; color: #4c1d95;
+  }
+  .rating-cell strong { display: block; font-size: 13px; color: #6d28d9; }
+
+  /* ── Schedule panel ── */
+  .sched-panel {
+    background: #fffbeb; border: 2px solid #f59e0b; border-radius: 12px;
+    padding: 16px 20px; min-width: 780px; max-width: 900px; box-shadow: 0 2px 8px rgba(245,158,11,0.15);
+  }
+  .sched-title {
+    text-align: center; font-weight: 700; font-size: 13px; color: #78350f; margin-bottom: 4px;
+  }
+  .sched-sub {
+    text-align: center; font-size: 10px; color: #92400e; margin-bottom: 14px;
+  }
+  .sched-outcomes { display: flex; gap: 14px; justify-content: center; align-items: flex-start; }
+  .sched-col { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; max-width: 190px; }
+  .outcome-badge {
+    border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700;
+    text-align: center; white-space: nowrap; width: 100%;
+  }
+  .outcome-open      { background: #d1fae5; border: 2px solid #10b981; color: #065f46; }
+  .outcome-closed    { background: #fee2e2; border: 2px solid #ef4444; color: #7f1d1d; }
+  .outcome-holiday   { background: #fef3c7; border: 2px solid #d97706; color: #78350f; }
+  .outcome-emergency { background: #ffe4e6; border: 2px solid #f43f5e; color: #881337; }
+  .outcome-desc { font-size: 9px; color: #718096; text-align: center; min-height: 24px; }
+  .outcome-action {
+    border-radius: 6px; padding: 5px 8px; font-size: 10px; font-weight: 600;
+    text-align: center; width: 100%;
+  }
+  .action-open      { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+  .action-closed    { background: #fee2e2; color: #7f1d1d; border: 1px solid #fca5a5; }
+  .action-holiday   { background: #fef3c7; color: #78350f; border: 1px solid #fcd34d; }
+  .action-emergency { background: #ffe4e6; color: #881337; border: 1px solid #fda4af; }
+
+  /* ── Schedule table ── */
+  .sched-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }
+  .sched-table th { background: #78350f; color: #fff; padding: 5px 10px; text-align: left; }
+  .sched-table td { padding: 4px 10px; border-bottom: 1px solid #fde68a; }
+  .sched-table tr:nth-child(even) td { background: #fefce8; }
+  .open-badge   { background: #d1fae5; color: #065f46; padding: 1px 6px; border-radius: 10px; font-weight: 700; font-size: 9px; }
+  .closed-badge { background: #fee2e2; color: #7f1d1d; padding: 1px 6px; border-radius: 10px; font-weight: 700; font-size: 9px; }
+  .config-badge { background: #dbeafe; color: #1e3a8a; padding: 1px 6px; border-radius: 10px; font-weight: 700; font-size: 9px; }
+</style>
+</head>
+<body>
+
+<h1>Claude Cars — Genesys Cloud Architect Diagram</h1>
+<p class="subtitle">
+  Inbound Call Flow + Schedule Group + Upfront Message + In-Queue + Post-Call Survey &nbsp;|&nbsp;
+  DID: +1 (773) 906-3291 &nbsp;|&nbsp;
+  Division: Claude_Exploration_Vijay &nbsp;|&nbsp;
+  <strong>Updated 2026-02-25</strong> &nbsp;|&nbsp; <strong>v15.0</strong>
+</p>
+
+<!-- Legend -->
+<div style="display:flex;justify-content:center">
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#2d3748"></div> Start / End</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div> Schedule Group Check (NEW)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div> Upfront Message Check (NEW)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#3182ce"></div> Menu (DTMF)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#d69e2e"></div> Decision</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#38a169"></div> Action / InQueue Loop</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#805ad5"></div> Set Participant Data</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e53e3e"></div> Transfer to ACD</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#dd6b20"></div> Queue</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div> Post-Call Survey</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#0284c7"></div> TTS Voice</div>
+</div>
+</div>
+
+<div class="diagram">
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!--  INBOUND CALL FLOW                                         -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <span class="section-label label-inbound">Inbound Call Flow — Claude_cars32 v15.0 (INBOUNDCALL) &nbsp;|&nbsp; id: 5796d427…</span>
+
+  <!-- DID entry point -->
+  <div style="display:flex;flex-direction:column;align-items:center;background:#1a365d;border-radius:12px;padding:10px 24px;box-shadow:0 2px 8px rgba(0,0,0,0.25);min-width:260px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:1.2px;color:#90cdf4;text-transform:uppercase;margin-bottom:4px">DID · IVR Config: Claude_VJ</div>
+    <div style="font-size:20px;font-weight:700;color:#fff;letter-spacing:1px">📞 +1 (773) 906-3291</div>
+    <div style="font-size:10px;color:#a0aec0;margin-top:3px">id: a68a5643… &nbsp;|&nbsp; Pool: 3e4b081e…</div>
+  </div>
+  <div class="arrow"><div class="arrow-line" style="height:18px"></div><div class="arrow-head"></div></div>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!--  SCHEDULE GROUP CHECK (NEW)                                -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <span class="section-label label-schedule">Business Hours Check — evaluateScheduleGroup (NEW · 2026-02-25)</span>
+
+  <div class="sched-panel">
+    <div class="sched-title">⏰ Schedule Group Check</div>
+    <div class="sched-sub">
+      Group: <strong>Claude_Cars_Schedule_Group</strong> &nbsp;|&nbsp;
+      ID: 79e337b9… &nbsp;|&nbsp;
+      Timezone: <strong>America/Los_Angeles</strong> (Pacific, DST-aware)
+    </div>
+
+    <div class="sched-outcomes">
+
+      <!-- CLOSED -->
+      <div class="sched-col">
+        <div class="outcome-badge outcome-closed">⊗ CLOSED</div>
+        <div class="outcome-desc">Sunday + outside open hours<br>(any time not in a schedule)</div>
+        <div style="width:2px;height:16px;background:#ef4444"></div>
+        <div class="outcome-action action-closed">
+          🔊 Play Closed Message<br>
+          <span style="font-size:9px;font-weight:400">"Offices closed. Hours: Mon–Fri 9AM–5PM, Sat 10AM–2PM Pacific."</span>
+        </div>
+        <div style="width:2px;height:10px;background:#ef4444"></div>
+        <div class="outcome-action action-closed">📴 Disconnect</div>
+      </div>
+
+      <!-- HOLIDAY -->
+      <div class="sched-col">
+        <div class="outcome-badge outcome-holiday">📅 HOLIDAY</div>
+        <div class="outcome-desc">Matches a holiday schedule<br>(add via Genesys UI)</div>
+        <div style="width:2px;height:16px;background:#d97706"></div>
+        <div class="outcome-action action-holiday">
+          🔊 Play Holiday Message<br>
+          <span style="font-size:9px;font-weight:400">"Closed for holiday. Call back next business day."</span>
+        </div>
+        <div style="width:2px;height:10px;background:#d97706"></div>
+        <div class="outcome-action action-holiday">📴 Disconnect</div>
+      </div>
+
+      <!-- OPEN -->
+      <div class="sched-col">
+        <div class="outcome-badge outcome-open">✓ OPEN</div>
+        <div class="outcome-desc">
+          Mon–Fri 9AM–5PM<br>
+          Saturday 10AM–2PM<br>
+          <span style="color:#10b981;font-weight:700">→ Continue below</span>
+        </div>
+        <div style="width:2px;height:16px;background:#10b981"></div>
+        <div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid #10b981"></div>
+      </div>
+
+      <!-- EMERGENCY -->
+      <div class="sched-col">
+        <div class="outcome-badge outcome-emergency">🚨 EMERGENCY</div>
+        <div class="outcome-desc">Emergency group active<br>(toggle ON via Genesys UI)</div>
+        <div style="width:2px;height:16px;background:#f43f5e"></div>
+        <div class="outcome-action action-emergency">
+          🔊 Play Emergency Message<br>
+          <span style="font-size:9px;font-weight:400">"Temporarily closed – emergency. Please try again later."</span>
+        </div>
+        <div style="width:2px;height:10px;background:#f43f5e"></div>
+        <div class="outcome-action action-emergency">📴 Disconnect</div>
+      </div>
+
+    </div><!-- /sched-outcomes -->
+
+    <!-- Schedule table -->
+    <table class="sched-table" style="margin-top:16px">
+      <tr><th>Day</th><th>Hours (Pacific Time)</th><th>Status</th><th>Schedule Name</th></tr>
+      <tr><td>Monday</td><td>9:00 AM – 5:00 PM</td><td><span class="open-badge">OPEN</span></td><td>Claude_Cars_WeekDay_Hours</td></tr>
+      <tr><td>Tuesday</td><td>9:00 AM – 5:00 PM</td><td><span class="open-badge">OPEN</span></td><td>Claude_Cars_WeekDay_Hours</td></tr>
+      <tr><td>Wednesday</td><td>9:00 AM – 5:00 PM</td><td><span class="open-badge">OPEN</span></td><td>Claude_Cars_WeekDay_Hours</td></tr>
+      <tr><td>Thursday</td><td>9:00 AM – 5:00 PM</td><td><span class="open-badge">OPEN</span></td><td>Claude_Cars_WeekDay_Hours</td></tr>
+      <tr><td>Friday</td><td>9:00 AM – 5:00 PM</td><td><span class="open-badge">OPEN</span></td><td>Claude_Cars_WeekDay_Hours</td></tr>
+      <tr><td>Saturday</td><td>10:00 AM – 2:00 PM</td><td><span class="open-badge">OPEN</span></td><td>Claude_Cars_Saturday_Hours</td></tr>
+      <tr><td>Sunday</td><td>—</td><td><span class="closed-badge">CLOSED</span></td><td>(not scheduled)</td></tr>
+      <tr><td>Holidays</td><td>All day</td><td><span class="config-badge">HOLIDAY</span></td><td>Add via Genesys UI</td></tr>
+      <tr><td>Emergency</td><td>Anytime</td><td><span class="config-badge">EMERGENCY</span></td><td>Claude_Cars_Emergency (toggle)</td></tr>
+    </table>
+  </div><!-- /sched-panel -->
+
+  <div class="arrow"><div class="arrow-line" style="height:18px"></div><div class="arrow-head"></div></div>
+  <div style="font-size:10px;color:#10b981;font-weight:700;margin-bottom:4px">OPEN path continues ↓</div>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!--  UPFRONT MESSAGE CHECK (NEW)                               -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div class="box box-upfront" style="min-width:420px;text-align:left">
+    <div style="font-weight:700;font-size:13px;margin-bottom:6px;color:#065f46">📋 Upfront Message Check &nbsp;<span class="badge">DataTable Lookup</span></div>
+    <div style="font-size:10px;color:#047857;margin-bottom:4px">
+      Table: <strong>VJ_claudeDatatable</strong> &nbsp;|&nbsp; Key: <strong>"UPFRONT MESSAGING"</strong>
+    </div>
+    <div style="display:flex;gap:20px;font-size:10px;color:#065f46;flex-wrap:wrap">
+      <div>
+        <div style="font-weight:700;margin-bottom:2px">If Active = <span style="color:#059669">TRUE</span></div>
+        <div>→ Play supervisor broadcast (TTS)</div>
+        <div style="color:#718096;font-size:9px">Text from Flow.UpfrontMessage variable</div>
+      </div>
+      <div>
+        <div style="font-weight:700;margin-bottom:2px">If Active = <span style="color:#dc2626">FALSE</span> / Not Found / Error</div>
+        <div>→ Skip to Language Menu</div>
+      </div>
+    </div>
+    <div style="margin-top:6px;font-size:9px;color:#6b7280;font-style:italic">
+      Supervisors set Active=true and update Message in VJ_claudeDatatable to enable broadcast
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line" style="height:18px"></div><div class="arrow-head"></div></div>
+
+  <!-- Language Menu with TTS voices -->
+  <div class="box box-menu">
+    🌐 Language Menu
+    <span class="badge">Menu</span>
+    <div style="font-size:10px;font-weight:400;margin-top:3px;color:#2b6cb0">
+      "Welcome to Claude Cars. Para Español oprima 2."
+    </div>
+    <div style="display:flex;gap:6px;justify-content:center;margin-top:5px;flex-wrap:wrap">
+      <span class="tts-chip">🎙 Genesys TTS · EN · <strong style="margin-left:2px">Jill</strong></span>
+      <span class="tts-chip">🎙 Genesys TTS · ES · <strong style="margin-left:2px">Isabel</strong></span>
+    </div>
+  </div>
+
+  <!-- Language split -->
+  <div style="position:relative;width:520px;height:56px;margin:0">
+    <div style="position:absolute;left:50%;top:0;width:2px;height:30px;background:#a0aec0;transform:translateX(-50%)"></div>
+    <div style="position:absolute;left:120px;right:120px;top:30px;height:2px;background:#a0aec0"></div>
+    <div style="position:absolute;left:120px;top:30px;width:2px;height:18px;background:#a0aec0"></div>
+    <div style="position:absolute;left:50%;top:30px;width:2px;height:18px;background:#a0aec0;transform:translateX(-50%)"></div>
+    <div style="position:absolute;right:120px;top:30px;width:2px;height:18px;background:#a0aec0"></div>
+    <div style="position:absolute;left:120px;top:44px;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid #a0aec0"></div>
+    <div style="position:absolute;left:50%;top:44px;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid #a0aec0"></div>
+    <div style="position:absolute;right:120px;top:44px;transform:translateX(50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid #a0aec0"></div>
+    <div style="position:absolute;left:42px;top:16px;font-size:10px;color:#718096">digit_1 / default</div>
+    <div style="position:absolute;left:228px;top:16px;font-size:10px;color:#718096">default</div>
+    <div style="position:absolute;right:12px;top:16px;font-size:10px;color:#718096">digit_2</div>
+  </div>
+
+  <!-- Two dept menus -->
+  <div class="row" style="gap:40px;align-items:flex-start">
+    <div class="col">
+      <div class="box box-menu" style="min-width:210px">
+        🇺🇸 English Dept Menu <span class="badge">Menu</span>
+        <div style="font-size:10px;font-weight:400;margin-top:3px;color:#2b6cb0">1-Sales | 2-Services | 3-New Models</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="box box-menu" style="min-width:210px">
+        🇪🇸 Spanish Dept Menu <span class="badge">Menu</span>
+        <div style="font-size:10px;font-weight:400;margin-top:3px;color:#2b6cb0">1-Ventas | 2-Servicios | 3-Nuevos Modelos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Converge to Geographic Routing -->
+  <div style="position:relative;width:520px;height:56px;margin:0">
+    <div style="position:absolute;left:110px;top:0;width:2px;height:30px;background:#a0aec0"></div>
+    <div style="position:absolute;right:110px;top:0;width:2px;height:30px;background:#a0aec0"></div>
+    <div style="position:absolute;left:110px;right:110px;top:30px;height:2px;background:#a0aec0"></div>
+    <div style="position:absolute;left:50%;top:30px;width:2px;height:18px;background:#a0aec0;transform:translateX(-50%)"></div>
+    <div style="position:absolute;left:50%;top:44px;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid #a0aec0"></div>
+    <div style="position:absolute;left:185px;top:10px;font-size:10px;color:#718096;white-space:nowrap">Any selection → Geographic Routing</div>
+  </div>
+
+  <!-- Geographic Decision -->
+  <div class="box box-decision">📍 Geographic<br>Routing</div>
+
+  <!-- Geographic split -->
+  <div style="position:relative;width:520px;height:64px;margin:0">
+    <div style="position:absolute;left:50%;top:0;width:2px;height:24px;background:#a0aec0;transform:translateX(-50%)"></div>
+    <div style="position:absolute;left:130px;right:130px;top:24px;height:2px;background:#a0aec0"></div>
+    <div style="position:absolute;left:130px;top:24px;width:2px;height:32px;background:#a0aec0"></div>
+    <div style="position:absolute;right:130px;top:24px;width:2px;height:32px;background:#a0aec0"></div>
+    <div style="position:absolute;left:130px;top:52px;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid #a0aec0"></div>
+    <div style="position:absolute;right:130px;top:52px;transform:translateX(50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid #a0aec0"></div>
+    <div style="position:absolute;left:14px;top:28px;font-size:10px;color:#718096">ANI starts +1 (or default)</div>
+    <div style="position:absolute;right:10px;top:28px;font-size:10px;color:#718096">ANI starts +91</div>
+  </div>
+
+  <!-- Two transfer tasks -->
+  <div class="row" style="gap:40px;align-items:flex-start">
+    <!-- US -->
+    <div class="col">
+      <div class="box box-script" style="min-width:210px;text-align:left">
+        <div class="script-title">🗒 Set Agent Script (US)</div>
+        <div class="script-attr"><span class="attr-key">QueueName:</span><span class="attr-val">Claude_US_Queue</span></div>
+        <div class="script-attr"><span class="attr-key">CallerNumber:</span><span class="attr-val">Call.Ani</span></div>
+        <div class="script-attr"><span class="attr-key">CallerLocation:</span><span class="attr-val">United States</span></div>
+      </div>
+      <div class="arrow"><div class="arrow-line" style="height:14px"></div><div class="arrow-head"></div></div>
+      <div class="box box-transfer" style="min-width:210px">
+        🔀 Transfer to ACD<br>
+        <span style="font-size:10px;font-weight:400">Claude_US_Queue</span><br>
+        <span style="font-size:9px;font-weight:400;color:#7c3aed">+ Voice Survey linked</span>
+      </div>
+    </div>
+    <!-- India -->
+    <div class="col">
+      <div class="box box-script" style="min-width:210px;text-align:left">
+        <div class="script-title">🗒 Set Agent Script (India)</div>
+        <div class="script-attr"><span class="attr-key">QueueName:</span><span class="attr-val">Claude_India_Queue</span></div>
+        <div class="script-attr"><span class="attr-key">CallerNumber:</span><span class="attr-val">Call.Ani</span></div>
+        <div class="script-attr"><span class="attr-key">CallerLocation:</span><span class="attr-val">India</span></div>
+      </div>
+      <div class="arrow"><div class="arrow-line" style="height:14px"></div><div class="arrow-head"></div></div>
+      <div class="box box-transfer" style="min-width:210px">
+        🔀 Transfer to ACD<br>
+        <span style="font-size:10px;font-weight:400">Claude_India_Queue</span><br>
+        <span style="font-size:9px;font-weight:400;color:#7c3aed">+ Voice Survey linked</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Down to queues -->
+  <div style="position:relative;width:520px;height:42px;margin:0">
+    <div style="position:absolute;left:130px;top:0;width:2px;height:42px;background:#dd6b20;opacity:.6"></div>
+    <div style="position:absolute;right:130px;top:0;width:2px;height:42px;background:#dd6b20;opacity:.6"></div>
+    <div style="position:absolute;left:130px;top:38px;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid #dd6b20;opacity:.7"></div>
+    <div style="position:absolute;right:130px;top:38px;transform:translateX(50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid #dd6b20;opacity:.7"></div>
+    <div style="position:absolute;left:144px;top:10px;font-size:10px;color:#dd6b20;font-style:italic">caller enters queue</div>
+    <div style="position:absolute;right:20px;top:10px;font-size:10px;color:#dd6b20;font-style:italic">caller enters queue</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!--  QUEUES                                                    -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div class="iq-section">
+    <div class="iq-col">
+      <span class="section-label label-queue" style="margin-bottom:6px">Queue</span>
+      <div class="box box-queue">
+        🗂 Claude_US_Queue
+        <div style="font-size:10px;font-weight:400;margin-top:2px">id: ed1d516d…</div>
+      </div>
+    </div>
+    <div class="iq-col">
+      <span class="section-label label-queue" style="margin-bottom:6px">Queue</span>
+      <div class="box box-queue">
+        🗂 Claude_India_Queue
+        <div style="font-size:10px;font-weight:400;margin-top:2px">id: 13f15c0b…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Down to InQueue flows -->
+  <div style="position:relative;width:520px;height:42px;margin:0">
+    <div style="position:absolute;left:130px;top:0;width:2px;height:42px;background:#38a169;opacity:.7"></div>
+    <div style="position:absolute;right:130px;top:0;width:2px;height:42px;background:#38a169;opacity:.7"></div>
+    <div style="position:absolute;left:130px;top:38px;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid #38a169;opacity:.8"></div>
+    <div style="position:absolute;right:130px;top:38px;transform:translateX(50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid #38a169;opacity:.8"></div>
+    <div style="position:absolute;left:144px;top:8px;font-size:10px;color:#38a169;font-style:italic">in-queue experience</div>
+    <div style="position:absolute;right:16px;top:8px;font-size:10px;color:#38a169;font-style:italic">in-queue experience</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!--  IN-QUEUE FLOWS                                            -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div class="iq-section">
+    <!-- US InQueue -->
+    <div class="iq-col">
+      <span class="section-label label-inqueue" style="margin-bottom:6px">InQueue Flow (INQUEUECALL)</span>
+      <div class="box box-inqueue" style="font-size:12px">
+        ▶ Claude_US_InQueue
+        <div style="font-size:10px;font-weight:400;margin-top:1px">id: 694b8665… | v1.0</div>
+      </div>
+      <div class="arrow"><div class="arrow-line" style="height:12px"></div><div class="arrow-head"></div></div>
+      <div class="box box-loop" style="min-width:250px">
+        <div class="loop-title">🔁 In-Queue Task Loop</div>
+        <div class="loop-step"><div class="step-num">1</div><span>Play PIQ &amp; EWT announcement</span></div>
+        <div class="loop-step"><div class="step-num">2</div><span>Hold Music — 30 seconds</span></div>
+        <div class="loop-step"><div class="step-num">3</div><span>AI Car Promo (TTS)</span></div>
+        <div class="loop-step"><div class="step-num">4</div><span>Updated PIQ &amp; EWT</span></div>
+        <div class="loop-step"><div class="step-num">5</div><span>Hold Music — 30 seconds</span></div>
+        <div class="loop-arrow">↻ auto-loops until agent answers</div>
+      </div>
+    </div>
+    <!-- India InQueue -->
+    <div class="iq-col">
+      <span class="section-label label-inqueue" style="margin-bottom:6px">InQueue Flow (INQUEUECALL)</span>
+      <div class="box box-inqueue" style="font-size:12px">
+        ▶ Claude_India_InQueue
+        <div style="font-size:10px;font-weight:400;margin-top:1px">id: 6d3d47e5… | v1.0</div>
+      </div>
+      <div class="arrow"><div class="arrow-line" style="height:12px"></div><div class="arrow-head"></div></div>
+      <div class="box box-loop" style="min-width:250px">
+        <div class="loop-title">🔁 In-Queue Task Loop</div>
+        <div class="loop-step"><div class="step-num">1</div><span>Play PIQ &amp; EWT announcement</span></div>
+        <div class="loop-step"><div class="step-num">2</div><span>Hold Music — 30 seconds</span></div>
+        <div class="loop-step"><div class="step-num">3</div><span>AI Car Promo (TTS)</span></div>
+        <div class="loop-step"><div class="step-num">4</div><span>Updated PIQ &amp; EWT</span></div>
+        <div class="loop-step"><div class="step-num">5</div><span>Hold Music — 30 seconds</span></div>
+        <div class="loop-arrow">↻ auto-loops until agent answers</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agent answers -->
+  <div style="position:relative;width:520px;height:42px;margin:0">
+    <div style="position:absolute;left:50%;top:0;width:2px;height:42px;background:#a0aec0;transform:translateX(-50%)"></div>
+    <div style="position:absolute;left:50%;top:38px;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid #a0aec0"></div>
+    <div style="position:absolute;left:53%;top:10px;font-size:10px;color:#718096;font-style:italic">agent answers → exits loop</div>
+  </div>
+
+  <!-- Agent Screen Pop -->
+  <div class="box" style="background:#e9d8fd;border:2px solid #805ad5;color:#44337a;min-width:340px">
+    👤 Agent Screen Pop<br>
+    <div style="font-size:10px;font-weight:400;margin-top:3px">
+      Shows: <strong>QueueName</strong> &nbsp;|&nbsp; <strong>CallerNumber</strong> (ANI) &nbsp;|&nbsp; <strong>CallerLocation</strong>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line" style="height:18px"></div><div class="arrow-head"></div></div>
+  <div class="box box-end">✅ Call Connected to Agent</div>
+
+  <!-- Agent disconnects → survey -->
+  <div style="position:relative;width:520px;height:48px;margin:0">
+    <div style="position:absolute;left:50%;top:0;width:2px;height:48px;background:#7c3aed;opacity:.7;transform:translateX(-50%)"></div>
+    <div style="position:absolute;left:50%;top:44px;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid #7c3aed;opacity:.8"></div>
+    <div style="position:absolute;left:53%;top:12px;font-size:10px;color:#7c3aed;font-style:italic">agent disconnects → post-call survey triggered</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!--  POST-CALL SURVEY FLOW                                     -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <span class="section-label label-survey">Post-Call Voice Survey — Claude_Cars_Voice_Survey v3.0 (VOICESURVEY) &nbsp;|&nbsp; id: a0c88d4e…</span>
+
+  <div class="box" style="background:#ede9fe;border:2px solid #7c3aed;color:#4c1d95;min-width:380px;font-size:12px">
+    📋 Claude_Cars_Voice_Survey
+    <div style="font-size:10px;font-weight:400;margin-top:2px">Linked on: Claude_US_Queue &amp; Claude_India_Queue (postCallSurveyFlow)</div>
+    <div style="margin-top:4px">
+      <span class="tts-chip" style="background:#ede9fe;border-color:#7c3aed;color:#6d28d9">🎙 Genesys TTS · EN · Jill</span>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line" style="height:12px"></div><div class="arrow-head"></div></div>
+
+  <!-- Survey flow box -->
+  <div class="box box-survey" style="min-width:420px">
+    <div class="survey-title">📊 Two-Question Survey (DTMF 1–5)</div>
+
+    <div style="margin-bottom:8px">
+      <div class="loop-step">
+        <div class="step-num-s">Q1</div>
+        <div>
+          <span style="font-weight:700">Agent Rating</span>
+          <span style="font-size:10px;color:#5b21b6"> — "Please rate the agent on a scale of 1 to 5."</span>
+        </div>
+      </div>
+      <div class="rating-grid" style="grid-template-columns:repeat(5,1fr);margin:4px 0 8px 24px">
+        <div class="rating-cell"><strong>1</strong>Poor</div>
+        <div class="rating-cell"><strong>2</strong>Below Avg</div>
+        <div class="rating-cell"><strong>3</strong>Average</div>
+        <div class="rating-cell"><strong>4</strong>Good</div>
+        <div class="rating-cell" style="background:#d1fae5;border-color:#6ee7b7;color:#065f46"><strong>5</strong>Excellent</div>
+      </div>
+
+      <div class="loop-step">
+        <div class="step-num-s">Q2</div>
+        <div>
+          <span style="font-weight:700">Overall Satisfaction</span>
+          <span style="font-size:10px;color:#5b21b6"> — "Overall, how satisfied were you? Press 1 to 5."</span>
+        </div>
+      </div>
+      <div class="rating-grid" style="grid-template-columns:repeat(5,1fr);margin:4px 0 0 24px">
+        <div class="rating-cell"><strong>1</strong>V.Dissatisfied</div>
+        <div class="rating-cell"><strong>2</strong>Dissatisfied</div>
+        <div class="rating-cell"><strong>3</strong>Neutral</div>
+        <div class="rating-cell"><strong>4</strong>Satisfied</div>
+        <div class="rating-cell" style="background:#d1fae5;border-color:#6ee7b7;color:#065f46"><strong>5</strong>V.Satisfied</div>
+      </div>
+    </div>
+
+    <div class="loop-step" style="margin-top:8px">
+      <div class="step-num-s">✓</div>
+      <span>Thank you message → Disconnect</span>
+    </div>
+  </div>
+
+  <div class="arrow"><div class="arrow-line" style="height:18px"></div><div class="arrow-head"></div></div>
+  <div class="box box-end">📴 Survey Complete — Call Ended</div>
+
+  <br>
+  <div style="font-size:11px;color:#718096;text-align:center;margin-top:8px;max-width:860px;line-height:1.8">
+    All flows published in <strong>Claude_Exploration_Vijay</strong> division &nbsp;|&nbsp;
+    Region: prod-us-west-2 &nbsp;|&nbsp; Organization: Waterfield<br>
+    <strong>Claude_cars32 v15.0</strong> (2026-02-25) &nbsp;|&nbsp;
+    Voice Survey v3.0 &nbsp;|&nbsp; InQueue v1.0 &nbsp;|&nbsp;
+    Schedule Group: Claude_Cars_Schedule_Group &nbsp;|&nbsp;
+    Emergency Group: Claude_Cars_Emergency
+  </div>
+
+</div>
+</body>
+</html>
