@@ -1,6 +1,6 @@
 inboundCall:
   name: Claude_cars32
-  description: "Claude Cars - Bilingual Language Selection (EN/ES), Department Menu (Sales/Services/New Models), Geographic Queue Routing (US/India), Data Table Upfront Message, Schedule Group Business Hours. UPDATED 2026-02-25: Added schedule group (Claude_Cars_Schedule_Group) - Mon-Fri 9AM-5PM, Sat 10AM-2PM Pacific, Sun closed, Holidays closed, Emergency group override."
+  description: "Claude Cars - Bilingual EN/ES, Dept Menu, Geo Queue Routing, Data Table Upfront Msg, Schedule Group Business Hours. UPDATED 2026-02-25: Schedule group Claude_Cars_Hours_Group (Mon-Fri 9AM-5PM, Sat 10AM-2PM Pacific, Sun/Holiday closed, Emergency group Claude_Cars_Emergency)."
   division: Claude_Exploration_Vijay
   startUpRef: "/inboundCall/tasks/task[Business Hours Check_80]"
   defaultLanguage: en-us
@@ -248,8 +248,8 @@ inboundCall:
               name: Check Business Hours
               scheduleGroup:
                 lit:
-                  id: 79e337b9-8e2c-4bb2-b26d-948c5f65e07c
-                  name: Claude_Cars_Schedule_Group
+                  id: 8ee4ca5d-8b2e-4d5b-bcd4-7a1337c7f5e1
+                  name: Claude_Cars_Hours_Group
               outputs:
                 open:
                   actions:
