@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Claude_cars32 — Call Flow Diagram</title>
+<style>
+  /* ── Base ─────────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    padding: 32px 24px 60px;
+  }
+
+  /* ── Page Header ─────────────────────────────────────────── */
+  .page-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 28px 36px;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+  }
+  .page-header h1 { font-size: 26px; font-weight: 700; letter-spacing: 0.5px; }
+  .page-header .meta { font-size: 13px; color: #a8b4cc; margin-top: 6px; }
+  .badge-list { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+  .badge {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: #c8d8f0;
+  }
+
+  /* ── Two-column layout ───────────────────────────────────── */
+  .layout { display: grid; grid-template-columns: 1fr 380px; gap: 24px; align-items: start; }
+
+  /* ── Flow Diagram Panel ──────────────────────────────────── */
+  .diagram-panel {
+    background: #fff;
+    border-radius: 14px;
+    padding: 32px 28px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  }
+  .diagram-panel h2 {
+    font-size: 16px; font-weight: 700; color: #0f3460;
+    border-bottom: 2px solid #e0e7ef; padding-bottom: 10px; margin-bottom: 24px;
+    text-transform: uppercase; letter-spacing: 0.8px;
+  }
+
+  /* ── Flow nodes ──────────────────────────────────────────── */
+  .flow { display: flex; flex-direction: column; align-items: center; gap: 0; }
+
+  /* Connector arrows */
+  .arrow {
+    width: 2px; background: #b0bec5; min-height: 20px;
+    display: flex; flex-direction: column; align-items: center; position: relative;
+  }
+  .arrow::after {
+    content: '▼'; position: absolute; bottom: -2px;
+    font-size: 10px; color: #b0bec5; line-height: 1;
+  }
+  .arrow.labeled {
+    min-height: 32px;
+  }
+  .arrow-label {
+    background: #fff; border: 1px solid #dde3ea; border-radius: 10px;
+    padding: 2px 8px; font-size: 10px; font-weight: 600; color: #546e7a;
+    position: absolute; white-space: nowrap; top: 4px; left: 8px;
+  }
+
+  /* Node base */
+  .node {
+    border-radius: 10px; padding: 12px 18px;
+    width: 100%; max-width: 620px;
+    position: relative; text-align: center;
+  }
+  .node .step-num {
+    position: absolute; top: -10px; left: 14px;
+    background: #0f3460; color: #fff; font-size: 10px; font-weight: 700;
+    border-radius: 10px; padding: 2px 8px; letter-spacing: 0.5px;
+  }
+  .node .node-title {
+    font-size: 13px; font-weight: 700; margin-bottom: 4px;
+  }
+  .node .node-sub {
+    font-size: 11px; opacity: 0.8;
+  }
+  .node .node-audio {
+    font-size: 10.5px; font-style: italic;
+    background: rgba(0,0,0,0.06); border-radius: 6px;
+    padding: 4px 8px; margin-top: 6px; text-align: left;
+  }
+
+  /* Color themes per node type */
+  .node-start    { background: #1a1a2e; color: #fff; border: none; }
+  .node-schedule { background: #e8f5e9; border: 2px solid #4caf50; color: #1b5e20; }
+  .node-data     { background: #e3f2fd; border: 2px solid #1e88e5; color: #0d47a1; }
+  .node-menu     { background: #fff3e0; border: 2px solid #fb8c00; color: #e65100; }
+  .node-decision { background: #f3e5f5; border: 2px solid #9c27b0; color: #4a148c; border-radius: 50px; }
+  .node-transfer { background: #e0f7fa; border: 2px solid #00acc1; color: #006064; }
+  .node-survey   { background: #fce4ec; border: 2px solid #e91e63; color: #880e4f; }
+  .node-end      { background: #ffebee; border: 2px solid #e53935; color: #b71c1c; border-radius: 50px; }
+  .node-closed   { background: #fafafa; border: 2px dashed #9e9e9e; color: #424242; }
+
+  /* Branch block */
+  .branch-wrapper {
+    width: 100%; max-width: 620px;
+    border: 1px solid #e0e7ef; border-radius: 12px;
+    background: #fafbfd; padding: 14px 10px;
+    margin: 0;
+  }
+  .branch-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    color: #78909c; letter-spacing: 0.8px; margin-bottom: 12px; text-align: center;
+  }
+  .branch-row {
+    display: grid; gap: 8px;
+  }
+  .branch-row.cols-2 { grid-template-columns: 1fr 1fr; }
+  .branch-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .branch-row.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+  .branch-col {
+    display: flex; flex-direction: column; align-items: center; gap: 0;
+  }
+  .branch-header {
+    width: 100%; border-radius: 6px; padding: 6px 6px;
+    font-size: 10.5px; font-weight: 700; text-align: center;
+    margin-bottom: 6px;
+  }
+  .bh-open     { background: #e8f5e9; color: #2e7d32; border: 1px solid #81c784; }
+  .bh-closed   { background: #fafafa; color: #616161; border: 1px solid #bdbdbd; }
+  .bh-holiday  { background: #fff3e0; color: #e65100; border: 1px solid #ffb74d; }
+  .bh-emergency{ background: #ffebee; color: #b71c1c; border: 1px solid #ef9a9a; }
+  .bh-en       { background: #e3f2fd; color: #0d47a1; border: 1px solid #90caf9; }
+  .bh-es       { background: #fff8e1; color: #f57f17; border: 1px solid #ffe082; }
+  .bh-us       { background: #e0f7fa; color: #006064; border: 1px solid #80deea; }
+  .bh-india    { background: #f3e5f5; color: #4a148c; border: 1px solid #ce93d8; }
+  .bh-dept     { background: #f1f8e9; color: #33691e; border: 1px solid #aed581; }
+  .bh-active   { background: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; }
+  .bh-inactive { background: #fce4ec; color: #880e4f; border: 1px solid #f48fb1; }
+
+  .mini-node {
+    width: 100%;
+    border-radius: 6px;
+    padding: 5px 7px;
+    font-size: 10px;
+    text-align: center;
+    margin-bottom: 3px;
+  }
+  .mini-audio  { background: #fff9c4; border: 1px solid #f9a825; color: #4e342e; font-style: italic; }
+  .mini-action { background: #e8eaf6; border: 1px solid #9fa8da; color: #1a237e; }
+  .mini-end    { background: #ffcdd2; border: 1px solid #ef9a9a; color: #b71c1c; font-weight: 700; }
+  .mini-arrow  { font-size: 10px; color: #b0bec5; line-height: 1.4; }
+
+  /* ── Step-by-Step Panel ──────────────────────────────────── */
+  .steps-panel {
+    background: #fff;
+    border-radius: 14px;
+    padding: 24px 20px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    position: sticky;
+    top: 20px;
+  }
+  .steps-panel h2 {
+    font-size: 15px; font-weight: 700; color: #0f3460;
+    border-bottom: 2px solid #e0e7ef; padding-bottom: 10px; margin-bottom: 18px;
+    text-transform: uppercase; letter-spacing: 0.8px;
+  }
+
+  .step-item {
+    display: flex; gap: 12px; margin-bottom: 16px; align-items: flex-start;
+  }
+  .step-circle {
+    min-width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .step-body { flex: 1; }
+  .step-name { font-size: 12.5px; font-weight: 700; margin-bottom: 2px; }
+  .step-desc { font-size: 11px; color: #546e7a; line-height: 1.5; }
+  .step-outcomes { margin-top: 5px; }
+  .outcome {
+    display: flex; align-items: flex-start; gap: 6px;
+    font-size: 10.5px; color: #37474f; margin-bottom: 2px;
+  }
+  .outcome-key {
+    font-weight: 700; min-width: 68px; font-size: 10px;
+    border-radius: 4px; padding: 1px 5px; text-align: center; flex-shrink: 0;
+  }
+  .ok-open     { background: #e8f5e9; color: #2e7d32; }
+  .ok-closed   { background: #eceff1; color: #546e7a; }
+  .ok-holiday  { background: #fff3e0; color: #e65100; }
+  .ok-emerg    { background: #ffebee; color: #c62828; }
+  .ok-press1   { background: #e3f2fd; color: #1565c0; }
+  .ok-press2   { background: #fff8e1; color: #f57f17; }
+  .ok-press3   { background: #e8f5e9; color: #2e7d32; }
+  .ok-default  { background: #ede7f6; color: #4527a0; }
+  .ok-us       { background: #e0f7fa; color: #006064; }
+  .ok-india    { background: #f3e5f5; color: #4a148c; }
+  .ok-yes      { background: #e8f5e9; color: #2e7d32; }
+  .ok-no       { background: #ffebee; color: #c62828; }
+
+  /* Colour circles */
+  .c1 { background: #1a1a2e; }
+  .c2 { background: #4caf50; }
+  .c3 { background: #1e88e5; }
+  .c4 { background: #fb8c00; }
+  .c5 { background: #9c27b0; }
+  .c6 { background: #00acc1; }
+  .c7 { background: #e91e63; }
+
+  /* ── Legend ──────────────────────────────────────────────── */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-top: 24px; padding-top: 16px; border-top: 1px solid #e0e7ef;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: #546e7a;
+  }
+  .legend-dot {
+    width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0;
+  }
+
+  /* ── Footer ──────────────────────────────────────────────── */
+  .footer {
+    text-align: center; font-size: 11px; color: #90a4ae;
+    margin-top: 30px;
+  }
+
+  @media print {
+    body { background: #fff; padding: 10px; }
+    .layout { grid-template-columns: 1fr; }
+    .steps-panel { position: static; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════ PAGE HEADER ══════════════════════════ -->
+<div class="page-header">
+  <div>
+    <h1>Claude_cars32 — Inbound Call Flow</h1>
+    <div class="meta">
+      Flow ID: 5796d427-8c0b-455f-8471-38db03907764 &nbsp;|&nbsp;
+      Published: v17.0 &nbsp;|&nbsp; Division: Claude_Exploration_Vijay &nbsp;|&nbsp;
+      Region: US West 2 (usw2.pure.cloud) &nbsp;|&nbsp; Updated: 2026-02-25
+    </div>
+  </div>
+  <div class="badge-list">
+    <span class="badge">Bilingual EN / ES</span>
+    <span class="badge">Geographic Queue Routing</span>
+    <span class="badge">Business Hours Scheduling</span>
+    <span class="badge">Post-Call Voice Survey</span>
+  </div>
+</div>
+
+<div class="layout">
+
+<!-- ══════════════════════════ DIAGRAM PANEL ══════════════════════════ -->
+<div class="diagram-panel">
+  <h2>Visual Call Flow Diagram</h2>
+  <div class="flow">
+
+    <!-- ── INBOUND CALL ── -->
+    <div class="node node-start" style="border-radius:50px; max-width:260px;">
+      <div class="node-title" style="font-size:15px;">📞 INBOUND CALL</div>
+      <div class="node-sub">Caller dials Claude Cars DID</div>
+    </div>
+    <div class="arrow" style="min-height:18px;"></div>
+
+    <!-- ── STEP 1: BUSINESS HOURS ── -->
+    <div class="node node-schedule">
+      <div class="step-num">STEP 1</div>
+      <div class="node-title">🕐 Business Hours Check</div>
+      <div class="node-sub">evaluateScheduleGroup → Claude_Cars_Hours_Group</div>
+      <div class="node-audio">Schedule: Mon–Fri 9AM–5PM · Sat 10AM–2PM Pacific · Sun/Holiday closed</div>
+    </div>
+    <div class="arrow" style="min-height:14px;"></div>
+
+    <!-- ── SCHEDULE BRANCH ── -->
+    <div class="branch-wrapper">
+      <div class="branch-title">Schedule Group Evaluation Outcomes</div>
+      <div class="branch-row cols-4">
+
+        <div class="branch-col">
+          <div class="branch-header bh-closed">⛔ CLOSED<br><span style="font-weight:400; font-size:9px;">Outside hours / Sun</span></div>
+          <div class="mini-node mini-audio">🔊 "Our offices are currently closed. Hrs: M–F 9AM–5PM, Sat 10AM–2PM Pacific…"</div>
+          <div class="mini-arrow">▼</div>
+          <div class="mini-node mini-end">☎ Disconnect</div>
+        </div>
+
+        <div class="branch-col">
+          <div class="branch-header bh-holiday">🎉 HOLIDAY</div>
+          <div class="mini-node mini-audio">🔊 "We are closed today in observance of a holiday. Next business day…"</div>
+          <div class="mini-arrow">▼</div>
+          <div class="mini-node mini-end">☎ Disconnect</div>
+        </div>
+
+        <div class="branch-col">
+          <div class="branch-header bh-open">✅ OPEN<br><span style="font-weight:400; font-size:9px;">Within business hours</span></div>
+          <div class="mini-node mini-action" style="font-weight:700;">→ Upfront Message Check</div>
+        </div>
+
+        <div class="branch-col">
+          <div class="branch-header bh-emergency">🚨 EMERGENCY<br><span style="font-weight:400; font-size:9px;">Manual override active</span></div>
+          <div class="mini-node mini-audio">🔊 "Temporarily closed due to emergency. Please try again later…"</div>
+          <div class="mini-arrow">▼</div>
+          <div class="mini-node mini-end">☎ Disconnect</div>
+        </div>
+
+      </div>
+    </div>
+    <div class="arrow labeled" style="min-height:34px;">
+      <span class="arrow-label">OPEN path continues ↓</span>
+    </div>
+
+    <!-- ── STEP 2: UPFRONT MESSAGE ── -->
+    <div class="node node-data">
+      <div class="step-num">STEP 2</div>
+      <div class="node-title">📋 Upfront Message Check</div>
+      <div class="node-sub">dataTableLookup → VJ_claudeDatatable (key: "UPFRONT MESSAGING")</div>
+      <div class="node-audio">Reads columns: Active (bool), Message (string). Supervisor-controlled.</div>
+    </div>
+    <div class="arrow" style="min-height:14px;"></div>
+
+    <!-- ── UPFRONT BRANCH ── -->
+    <div class="branch-wrapper">
+      <div class="branch-title">Data Table Lookup Outcomes</div>
+      <div class="branch-row cols-3">
+
+        <div class="branch-col">
+          <div class="branch-header bh-active">🟢 Found + Active=TRUE</div>
+          <div class="mini-node mini-audio">🔊 Play upfront message<br>(from Flow.UpfrontMessage)</div>
+          <div class="mini-arrow">▼</div>
+          <div class="mini-node mini-action">→ Language Menu</div>
+        </div>
+
+        <div class="branch-col">
+          <div class="branch-header bh-inactive">🔴 Found + Active=FALSE</div>
+          <div class="mini-node mini-action">Skip message<br>→ Language Menu</div>
+        </div>
+
+        <div class="branch-col">
+          <div class="branch-header bh-closed">⚠️ Not Found / Error</div>
+          <div class="mini-node mini-action">Fallback<br>→ Language Menu</div>
+        </div>
+
+      </div>
+    </div>
+    <div class="arrow labeled" style="min-height:34px;">
+      <span class="arrow-label">All paths → Language Menu ↓</span>
+    </div>
+
+    <!-- ── STEP 3: LANGUAGE MENU ── -->
+    <div class="node node-menu">
+      <div class="step-num">STEP 3</div>
+      <div class="node-title">🌐 Language Selection Menu</div>
+      <div class="node-sub">IVR Menu · Timeout: 10 sec · Repeat: 3×</div>
+      <div class="node-audio">🔊 "Welcome to Claude Cars. For English press 1. Para Español oprima 2."</div>
+    </div>
+    <div class="arrow" style="min-height:14px;"></div>
+
+    <!-- ── LANGUAGE BRANCH ── -->
+    <div class="branch-wrapper">
+      <div class="branch-title">DTMF Selection</div>
+      <div class="branch-row cols-2">
+
+        <div class="branch-col">
+          <div class="branch-header bh-en">1️⃣ Press 1 (or default *) — ENGLISH</div>
+          <div class="mini-node mini-action">setLanguage → en-us<br>TTS Voice: Jill</div>
+          <div class="mini-arrow">▼</div>
+          <div class="mini-node mini-action" style="font-weight:700;">→ English Dept Menu</div>
+        </div>
+
+        <div class="branch-col">
+          <div class="branch-header bh-es">2️⃣ Press 2 — ESPAÑOL</div>
+          <div class="mini-node mini-action">setLanguage → es-us<br>TTS Voice: Isabel</div>
+          <div class="mini-arrow">▼</div>
+          <div class="mini-node mini-action" style="font-weight:700;">→ Spanish Dept Menu</div>
+        </div>
+
+      </div>
+    </div>
+    <div class="arrow" style="min-height:14px;"></div>
+
+    <!-- ── STEP 4: DEPT MENUS ── -->
+    <div class="branch-wrapper">
+      <div class="branch-title">STEP 4 — Department Selection Menu (EN &amp; ES)</div>
+      <div class="branch-row cols-2" style="margin-bottom:12px;">
+
+        <div class="branch-col">
+          <div class="branch-header bh-en">🇺🇸 English Dept Menu</div>
+          <div class="mini-node mini-audio" style="text-align:left; font-size:10px;">🔊 "For Sales press 1, For Services press 2, For New Models press 3."</div>
+        </div>
+        <div class="branch-col">
+          <div class="branch-header bh-es">🇲🇽 Spanish Dept Menu</div>
+          <div class="mini-node mini-audio" style="text-align:left; font-size:10px;">🔊 "Para ventas oprima 1, Para servicios oprima 2, Para nuevos modelos oprima 3."</div>
+        </div>
+      </div>
+
+      <div class="branch-row cols-3">
+        <div class="branch-col">
+          <div class="branch-header bh-dept">1️⃣ Sales / Ventas</div>
+          <div class="mini-node mini-action">→ Geographic Routing</div>
+        </div>
+        <div class="branch-col">
+          <div class="branch-header bh-dept">2️⃣ Services / Servicios</div>
+          <div class="mini-node mini-action">→ Geographic Routing</div>
+        </div>
+        <div class="branch-col">
+          <div class="branch-header bh-dept">3️⃣ New Models / Nuevos Modelos</div>
+          <div class="mini-node mini-action">→ Geographic Routing</div>
+        </div>
+      </div>
+    </div>
+    <div class="arrow labeled" style="min-height:34px;">
+      <span class="arrow-label">All dept choices → Geographic Routing ↓</span>
+    </div>
+
+    <!-- ── STEP 5: GEO ROUTING ── -->
+    <div class="node node-decision">
+      <div class="step-num">STEP 5</div>
+      <div class="node-title">🗺️ Geographic Routing</div>
+      <div class="node-sub">decision: Check Call.Ani prefix</div>
+      <div class="node-audio">+1 (US) → Claude_US_Queue &nbsp;&nbsp; +91 (India) → Claude_India_Queue &nbsp;&nbsp; Other → US (default)</div>
+    </div>
+    <div class="arrow" style="min-height:14px;"></div>
+
+    <!-- ── GEO BRANCH ── -->
+    <div class="branch-wrapper">
+      <div class="branch-title">ANI Prefix Decision</div>
+      <div class="branch-row cols-2">
+
+        <div class="branch-col">
+          <div class="branch-header bh-us">🇺🇸 ANI starts with "+1" (US) &nbsp;|&nbsp; Default</div>
+          <div class="mini-node mini-action" style="font-size:9px;">setParticipantData: QueueName=Claude_US_Queue, CallerLocation=United States</div>
+          <div class="mini-arrow">▼</div>
+          <div class="mini-node mini-audio">🔊 "Connecting you to our US team. Please hold."</div>
+          <div class="mini-arrow">▼</div>
+          <div class="mini-node mini-action">transferToAcd → Claude_US_Queue<br>(ID: ed1d516d...)</div>
+          <div class="mini-arrow">▼</div>
+          <div class="mini-node" style="background:#fce4ec;border:1px solid #f48fb1;color:#880e4f;border-radius:6px;padding:5px 7px;font-size:10px;text-align:center;">
+            📝 Post-Call Survey<br>Claude_Cars_Voice_Survey
+          </div>
+          <div class="mini-arrow">▼</div>
+          <div class="mini-node mini-end">☎ Disconnect</div>
+          <div style="height:8px;"></div>
+          <div class="mini-node" style="background:#fff9c4;border:1px solid #f9a825;color:#4e342e;border-radius:6px;padding:5px;font-size:9.5px;font-style:italic;">
+            ⚠️ If transfer fails: "All US reps busy…" → Disconnect
+          </div>
+        </div>
+
+        <div class="branch-col">
+          <div class="branch-header bh-india">🇮🇳 ANI starts with "+91" (India)</div>
+          <div class="mini-node mini-action" style="font-size:9px;">setParticipantData: QueueName=Claude_India_Queue, CallerLocation=India</div>
+          <div class="mini-arrow">▼</div>
+          <div class="mini-node mini-audio">🔊 "Connecting you to our India team. Please hold."</div>
+          <div class="mini-arrow">▼</div>
+          <div class="mini-node mini-action">transferToAcd → Claude_India_Queue<br>(ID: 13f15c0b...)</div>
+          <div class="mini-arrow">▼</div>
+          <div class="mini-node" style="background:#fce4ec;border:1px solid #f48fb1;color:#880e4f;border-radius:6px;padding:5px 7px;font-size:10px;text-align:center;">
+            📝 Post-Call Survey<br>Claude_Cars_Voice_Survey
+          </div>
+          <div class="mini-arrow">▼</div>
+          <div class="mini-node mini-end">☎ Disconnect</div>
+          <div style="height:8px;"></div>
+          <div class="mini-node" style="background:#fff9c4;border:1px solid #f9a825;color:#4e342e;border-radius:6px;padding:5px;font-size:9.5px;font-style:italic;">
+            ⚠️ If transfer fails: "All India reps busy…" → Disconnect
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── LEGEND ── -->
+    <div class="legend" style="max-width:620px;">
+      <div class="legend-item"><div class="legend-dot" style="background:#1a1a2e;"></div> Entry Point</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#4caf50;"></div> Schedule Evaluation</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#1e88e5;"></div> Data Table Lookup</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fb8c00;"></div> IVR Menu</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#9c27b0;"></div> Decision / Routing</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#00acc1;"></div> Queue Transfer</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e91e63;"></div> Post-Call Survey</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e53935;"></div> Disconnect</div>
+    </div>
+
+  </div><!-- /flow -->
+</div><!-- /diagram-panel -->
+
+<!-- ══════════════════════════ STEPS PANEL ══════════════════════════ -->
+<div class="steps-panel">
+  <h2>Step-by-Step Procedure</h2>
+
+  <!-- Step 1 -->
+  <div class="step-item">
+    <div class="step-circle c2">1</div>
+    <div class="step-body">
+      <div class="step-name">Business Hours Check</div>
+      <div class="step-desc">First action on every call. Evaluates <em>Claude_Cars_Hours_Group</em> schedule against current time (Pacific).</div>
+      <div class="step-outcomes">
+        <div class="outcome"><span class="outcome-key ok-open">OPEN</span>Proceed to Upfront Message Check</div>
+        <div class="outcome"><span class="outcome-key ok-closed">CLOSED</span>Play closed-hours message → Disconnect</div>
+        <div class="outcome"><span class="outcome-key ok-holiday">HOLIDAY</span>Play holiday message → Disconnect</div>
+        <div class="outcome"><span class="outcome-key ok-emerg">EMERGENCY</span>Play emergency message → Disconnect</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step-item">
+    <div class="step-circle c3">2</div>
+    <div class="step-body">
+      <div class="step-name">Upfront Message Check</div>
+      <div class="step-desc">Looks up key <em>"UPFRONT MESSAGING"</em> in <em>VJ_claudeDatatable</em>. Reads Active (bool) &amp; Message (string) columns.</div>
+      <div class="step-outcomes">
+        <div class="outcome"><span class="outcome-key ok-yes">Active=YES</span>Play dynamic TTS message → Language Menu</div>
+        <div class="outcome"><span class="outcome-key ok-no">Active=NO</span>Skip message → Language Menu</div>
+        <div class="outcome"><span class="outcome-key ok-default">Error</span>Fallback → Language Menu</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="step-item">
+    <div class="step-circle c4">3</div>
+    <div class="step-body">
+      <div class="step-name">Language Selection</div>
+      <div class="step-desc">IVR menu. Plays bilingual prompt. Timeout 10 s, repeats up to 3×.</div>
+      <div class="step-outcomes">
+        <div class="outcome"><span class="outcome-key ok-press1">Press 1</span>Set en-us (Voice: Jill) → English Dept Menu</div>
+        <div class="outcome"><span class="outcome-key ok-press2">Press 2</span>Set es-us (Voice: Isabel) → Spanish Dept Menu</div>
+        <div class="outcome"><span class="outcome-key ok-default">Default *</span>Set en-us → English Dept Menu</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="step-item">
+    <div class="step-circle c4">4</div>
+    <div class="step-body">
+      <div class="step-name">Department Selection</div>
+      <div class="step-desc">Separate EN and ES menus with matching TTS. Timeout 10 s, repeats up to 3×.</div>
+      <div class="step-outcomes">
+        <div class="outcome"><span class="outcome-key ok-press1">Press 1</span>Sales (Ventas) → Geographic Routing</div>
+        <div class="outcome"><span class="outcome-key ok-press2">Press 2</span>Services (Servicios) → Geographic Routing</div>
+        <div class="outcome"><span class="outcome-key ok-press3">Press 3</span>New Models (Nuevos Modelos) → Geographic Routing</div>
+        <div class="outcome"><span class="outcome-key ok-default">Default *</span>Route to Geographic (default)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 5 -->
+  <div class="step-item">
+    <div class="step-circle c5">5</div>
+    <div class="step-body">
+      <div class="step-name">Geographic Routing</div>
+      <div class="step-desc">Checks <em>Call.Ani</em> prefix to determine caller region.</div>
+      <div class="step-outcomes">
+        <div class="outcome"><span class="outcome-key ok-us">+1 (US)</span>→ US Queue Transfer</div>
+        <div class="outcome"><span class="outcome-key ok-india">+91 (India)</span>→ India Queue Transfer</div>
+        <div class="outcome"><span class="outcome-key ok-default">Other</span>Default → US Queue Transfer</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 6a -->
+  <div class="step-item">
+    <div class="step-circle c6">6a</div>
+    <div class="step-body">
+      <div class="step-name">US Queue Transfer</div>
+      <div class="step-desc">Sets participant attributes, plays hold music prompt, then transfers to <em>Claude_US_Queue</em>.</div>
+      <div class="step-outcomes">
+        <div class="outcome"><span class="outcome-key ok-yes">Success</span>Agent answers → Post-call survey → Disconnect</div>
+        <div class="outcome"><span class="outcome-key ok-no">Failure</span>Play busy message → Disconnect</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 6b -->
+  <div class="step-item">
+    <div class="step-circle c6">6b</div>
+    <div class="step-body">
+      <div class="step-name">India Queue Transfer</div>
+      <div class="step-desc">Sets participant attributes, plays hold music prompt, then transfers to <em>Claude_India_Queue</em>.</div>
+      <div class="step-outcomes">
+        <div class="outcome"><span class="outcome-key ok-yes">Success</span>Agent answers → Post-call survey → Disconnect</div>
+        <div class="outcome"><span class="outcome-key ok-no">Failure</span>Play busy message → Disconnect</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 7 -->
+  <div class="step-item">
+    <div class="step-circle c7">7</div>
+    <div class="step-body">
+      <div class="step-name">Post-Call Voice Survey</div>
+      <div class="step-desc">Triggered automatically after call ends on both queues. Flow: <em>Claude_Cars_Voice_Survey</em> (v3.0).</div>
+      <div class="step-outcomes">
+        <div class="outcome"><span class="outcome-key ok-press1">Q1</span>Agent Rating 1–5 (TTS prompt)</div>
+        <div class="outcome"><span class="outcome-key ok-press2">Q2</span>Overall Satisfaction 1–5 (TTS prompt)</div>
+        <div class="outcome"><span class="outcome-key ok-default">End</span>Disconnect after Q2</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Objects inventory -->
+  <div style="margin-top:20px; padding-top:16px; border-top:1px solid #e0e7ef;">
+    <div style="font-size:11px; font-weight:700; color:#0f3460; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:10px;">Key Objects (IDs)</div>
+    <table style="width:100%; border-collapse:collapse; font-size:10px; color:#37474f;">
+      <tr style="background:#f5f7fa;">
+        <td style="padding:4px 6px; font-weight:700; border:1px solid #e0e7ef; width:45%;">Object</td>
+        <td style="padding:4px 6px; border:1px solid #e0e7ef;">Short ID</td>
+      </tr>
+      <tr><td style="padding:3px 6px;border:1px solid #e0e7ef;">Claude_cars32 (flow)</td><td style="padding:3px 6px;border:1px solid #e0e7ef;font-family:monospace;">5796d427</td></tr>
+      <tr><td style="padding:3px 6px;border:1px solid #e0e7ef;background:#f9f9f9;">Claude_Cars_Hours_Group (SG)</td><td style="padding:3px 6px;border:1px solid #e0e7ef;background:#f9f9f9;font-family:monospace;">8ee4ca5d</td></tr>
+      <tr><td style="padding:3px 6px;border:1px solid #e0e7ef;">Claude_Cars_WeekDay_Hours</td><td style="padding:3px 6px;border:1px solid #e0e7ef;font-family:monospace;">4487a794</td></tr>
+      <tr><td style="padding:3px 6px;border:1px solid #e0e7ef;background:#f9f9f9;">Claude_Cars_Saturday_Hours</td><td style="padding:3px 6px;border:1px solid #e0e7ef;background:#f9f9f9;font-family:monospace;">7b382f3d</td></tr>
+      <tr><td style="padding:3px 6px;border:1px solid #e0e7ef;">Claude_Cars_Emergency (EG)</td><td style="padding:3px 6px;border:1px solid #e0e7ef;font-family:monospace;">2ad23901</td></tr>
+      <tr><td style="padding:3px 6px;border:1px solid #e0e7ef;background:#f9f9f9;">VJ_claudeDatatable</td><td style="padding:3px 6px;border:1px solid #e0e7ef;background:#f9f9f9;font-family:monospace;">a698670c</td></tr>
+      <tr><td style="padding:3px 6px;border:1px solid #e0e7ef;">Claude_US_Queue</td><td style="padding:3px 6px;border:1px solid #e0e7ef;font-family:monospace;">ed1d516d</td></tr>
+      <tr><td style="padding:3px 6px;border:1px solid #e0e7ef;background:#f9f9f9;">Claude_India_Queue</td><td style="padding:3px 6px;border:1px solid #e0e7ef;background:#f9f9f9;font-family:monospace;">13f15c0b</td></tr>
+      <tr><td style="padding:3px 6px;border:1px solid #e0e7ef;">Claude_Cars_Voice_Survey</td><td style="padding:3px 6px;border:1px solid #e0e7ef;font-family:monospace;">a0c88d4e</td></tr>
+    </table>
+  </div>
+
+</div><!-- /steps-panel -->
+
+</div><!-- /layout -->
+
+<div class="footer">
+  Claude_cars32 · Genesys Cloud Architect · v17.0 · Published 2026-02-25 · Division: Claude_Exploration_Vijay
+</div>
+
+</body>
+</html>
