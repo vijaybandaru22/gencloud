@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>ORS Call Flow – On Road Support | Ahold Delhaize</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background:#f4f6f9; color:#1a1a2e; }
+
+  /* ── PAGE ── */
+  .page { width:1100px; margin:0 auto; padding:30px 40px 50px; background:#fff; }
+
+  /* ── HEADER ── */
+  .header { display:flex; justify-content:space-between; align-items:center;
+            background:linear-gradient(135deg,#1a237e 0%,#283593 60%,#0d47a1 100%);
+            color:#fff; padding:22px 30px; border-radius:10px 10px 0 0; margin-bottom:0; }
+  .header-left h1 { font-size:22px; font-weight:700; letter-spacing:.5px; }
+  .header-left p  { font-size:12px; opacity:.85; margin-top:4px; }
+  .header-right   { text-align:right; font-size:11px; opacity:.85; line-height:1.8; }
+  .badge { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3);
+           border-radius:20px; padding:3px 12px; font-size:11px; display:inline-block; margin-top:4px; }
+
+  /* ── LEGEND ── */
+  .legend { display:flex; gap:14px; flex-wrap:wrap; background:#f8f9fb;
+            border:1px solid #dde; padding:10px 20px; font-size:11px; align-items:center; }
+  .legend-item { display:flex; align-items:center; gap:6px; }
+  .legend-box  { width:18px; height:18px; border-radius:3px; flex-shrink:0; }
+  .lb-start    { background:#2e7d32; border:2px solid #1b5e20; border-radius:50%; }
+  .lb-decision { background:#f57f17; border:2px solid #e65100; transform:rotate(45deg); width:16px; height:16px; }
+  .lb-process  { background:#1565c0; border:2px solid #0d47a1; }
+  .lb-menu     { background:#6a1b9a; border:2px solid #4a148c; }
+  .lb-queue    { background:#00695c; border:2px solid #004d40; }
+  .lb-inqueue  { background:#37474f; border:2px solid #263238; }
+  .lb-end      { background:#b71c1c; border:2px solid #7f0000; border-radius:50%; }
+  .lb-note     { background:#ff8f00; border:2px solid #e65100; border-radius:10px; }
+
+  /* ── SECTION LABELS ── */
+  .section-label { font-size:11px; font-weight:700; color:#546e7a; letter-spacing:1.5px;
+                   text-transform:uppercase; padding:6px 0 2px; border-top:2px solid #e0e0e0; margin-top:18px; }
+
+  /* ── FLOW CONTAINER ── */
+  .flow-wrap { padding:20px 10px 10px; }
+
+  /* ── NODES ── */
+  .node { position:relative; display:flex; align-items:center; justify-content:center;
+          text-align:center; font-size:12px; font-weight:500; line-height:1.35; }
+
+  /* Shapes */
+  .n-start, .n-end {
+    width:180px; height:44px; border-radius:22px; color:#fff; font-weight:700;
+    font-size:12px; margin:0 auto;
+  }
+  .n-start { background:linear-gradient(135deg,#2e7d32,#43a047); border:2px solid #1b5e20;
+             box-shadow:0 3px 8px rgba(46,125,50,.4); }
+  .n-end   { background:linear-gradient(135deg,#b71c1c,#e53935); border:2px solid #7f0000;
+             box-shadow:0 3px 8px rgba(183,28,28,.4); }
+
+  .n-decision {
+    width:220px; height:60px; background:linear-gradient(135deg,#f57f17,#fb8c00);
+    border:2px solid #e65100; color:#fff; font-weight:600; clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
+    margin:0 auto; font-size:11.5px; box-shadow:0 3px 8px rgba(245,127,23,.4);
+  }
+
+  .n-process {
+    background:linear-gradient(135deg,#1565c0,#1976d2); border:2px solid #0d47a1;
+    color:#fff; border-radius:6px; padding:10px 16px; min-height:44px;
+    box-shadow:0 3px 8px rgba(21,101,192,.35);
+  }
+
+  .n-menu {
+    background:linear-gradient(135deg,#6a1b9a,#7b1fa2); border:2px solid #4a148c;
+    color:#fff; border-radius:6px; padding:10px 16px; min-height:44px;
+    box-shadow:0 3px 8px rgba(106,27,154,.35);
+  }
+
+  .n-queue {
+    background:linear-gradient(135deg,#00695c,#00796b); border:2px solid #004d40;
+    color:#fff; border-radius:6px; padding:10px 16px; min-height:44px;
+    box-shadow:0 3px 8px rgba(0,105,92,.35);
+  }
+
+  .n-inqueue {
+    background:linear-gradient(135deg,#37474f,#455a64); border:2px solid #263238;
+    color:#fff; border-radius:6px; padding:10px 16px; min-height:44px;
+    box-shadow:0 3px 8px rgba(55,71,79,.35);
+  }
+
+  .n-note {
+    background:linear-gradient(135deg,#fff3e0,#ffe0b2); border:1.5px dashed #ff8f00;
+    color:#4a3000; border-radius:6px; padding:8px 14px; font-size:11px; font-style:italic;
+  }
+
+  .n-wide  { width:440px; }
+  .n-mid   { width:320px; }
+  .n-sm    { width:220px; }
+
+  /* ── ARROWS ── */
+  .arrow { display:flex; flex-direction:column; align-items:center;
+           color:#546e7a; font-size:10px; margin:0 auto; }
+  .arrow-line  { width:2px; background:#90a4ae; flex-grow:1; min-height:14px; }
+  .arrow-head  { width:0; height:0; border-left:6px solid transparent;
+                 border-right:6px solid transparent; border-top:8px solid #90a4ae; }
+  .arrow-label { font-size:10px; color:#37474f; font-weight:600; background:#fff;
+                 border:1px solid #cfd8dc; border-radius:4px; padding:1px 6px; margin:2px 0; }
+
+  /* ── SIDE LABEL (YES/NO) ── */
+  .side-label { font-size:10px; color:#37474f; font-weight:700; }
+  .label-yes  { color:#2e7d32; }
+  .label-no   { color:#b71c1c; }
+
+  /* ── ROW / COL LAYOUT ── */
+  .row { display:flex; gap:0; justify-content:center; align-items:stretch; }
+  .col { display:flex; flex-direction:column; align-items:center; flex:1; }
+  .col-spacer { width:30px; flex-shrink:0; }
+
+  /* ── BRANCH BOX ── */
+  .branch-box { border:2px solid #cfd8dc; border-radius:10px; padding:14px 12px;
+                background:#fafbfc; flex:1; display:flex; flex-direction:column; align-items:center; }
+  .branch-title { font-size:11px; font-weight:700; color:#fff; border-radius:20px;
+                  padding:3px 14px; margin-bottom:10px; letter-spacing:.5px; }
+  .bt-driver { background:#1565c0; }
+  .bt-cc     { background:#6a1b9a; }
+  .bt-inq-d  { background:#37474f; }
+  .bt-inq-cc { background:#00695c; }
+
+  /* ── HORIZONTAL SPLIT LINE ── */
+  .h-split { display:flex; align-items:center; gap:10px; margin:6px 0; }
+  .h-split-line { flex:1; height:2px; background:#cfd8dc; }
+  .h-split-label { font-size:10px; font-weight:700; color:#546e7a; white-space:nowrap; }
+
+  /* ── CLOSED/EMERGENCY SIDE NODES ── */
+  .side-row { display:flex; align-items:center; gap:10px; width:100%; justify-content:center; }
+  .side-block { display:flex; flex-direction:column; align-items:center; }
+  .h-arrow { display:flex; align-items:center; gap:0; }
+  .h-arrow-line { height:2px; width:24px; background:#90a4ae; }
+  .h-arrow-head { width:0; height:0; border-top:5px solid transparent;
+                  border-bottom:5px solid transparent; border-left:7px solid #90a4ae; }
+
+  /* ── STEP NUMBERS ── */
+  .step-num { position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+              background:#fff; border:2px solid #90a4ae; border-radius:50%;
+              width:22px; height:22px; display:flex; align-items:center; justify-content:center;
+              font-size:10px; font-weight:700; color:#37474f; }
+
+  /* ── FOOTER ── */
+  .footer { margin-top:28px; padding-top:12px; border-top:1px solid #e0e0e0;
+            display:flex; justify-content:space-between; font-size:10px; color:#90a4ae; }
+
+  /* ── INQUEUE SECTION ── */
+  .inq-section { display:flex; gap:20px; margin-top:6px; }
+  .inq-col { flex:1; display:flex; flex-direction:column; align-items:center; }
+
+  /* ── LOOP INDICATOR ── */
+  .loop-box { border:2px dashed #90a4ae; border-radius:8px; padding:8px 10px;
+              width:100%; text-align:center; font-size:10px; color:#546e7a;
+              font-style:italic; margin-top:4px; background:#f5f5f5; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h1>On Road Support (ORS) — Genesys Cloud Call Flow</h1>
+      <p>Ahold Delhaize | Bilingual EN/ES | Driver &amp; Customer Care Routing | In-Queue Experience</p>
+    </div>
+    <div class="header-right">
+      <div><strong>Flow:</strong> ORS_Main_Inbound &nbsp;|&nbsp; v1.0</div>
+      <div><strong>Region:</strong> Genesys Cloud US West 2</div>
+      <div><strong>Division:</strong> Claude_Exploration_Vijay</div>
+      <div><strong>Created:</strong> 2026-02-26</div>
+      <div class="badge">PUBLISHED</div>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <strong style="font-size:11px;color:#37474f;">LEGEND:</strong>
+    <div class="legend-item"><div class="legend-box lb-start"></div> Start / End</div>
+    <div class="legend-item"><div class="legend-box lb-decision"></div> Decision</div>
+    <div class="legend-item"><div class="legend-box lb-process"></div> Process / Action</div>
+    <div class="legend-item"><div class="legend-box lb-menu"></div> Menu / Selection</div>
+    <div class="legend-item"><div class="legend-box lb-queue"></div> Queue Transfer</div>
+    <div class="legend-item"><div class="legend-box lb-inqueue"></div> In-Queue Experience</div>
+    <div class="legend-item"><div class="legend-box lb-end"></div> Disconnect</div>
+    <div class="legend-item"><div class="legend-box lb-note"></div> Supervisor Toggle</div>
+  </div>
+
+  <div class="flow-wrap">
+
+    <!-- ═══════════════════════════════════ -->
+    <!--   MAIN INBOUND FLOW                -->
+    <!-- ═══════════════════════════════════ -->
+    <div class="section-label">▶ MAIN INBOUND FLOW — ORS_Main_Inbound</div>
+
+    <!-- STEP 1: CALLER DIALS IN -->
+    <div style="display:flex;flex-direction:column;align-items:center;margin-top:14px;">
+
+      <div class="node">
+        <div class="n-start n-mid" style="width:360px;">
+          📞 &nbsp;CALLER DIALS IN<br/>
+          <span style="font-size:10px;font-weight:400;opacity:.9;">Driver: +1 888-722-9985 &nbsp;|&nbsp; Customer Care: +1 833-284-9972</span>
+        </div>
+      </div>
+
+      <div class="arrow" style="height:28px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+      <!-- STEP 2: SCHEDULE CHECK -->
+      <div class="node" style="position:relative;">
+        <div class="step-num">1</div>
+        <div class="n-decision" style="width:260px;height:70px;font-size:11px;">
+          Schedule Group Check<br/><span style="font-size:10px;font-weight:400;">ORS_Schedule_Group</span><br/><span style="font-size:9px;opacity:.9;">5:00 AM – 11:00 PM CST · Daily</span>
+        </div>
+      </div>
+
+      <!-- SCHEDULE BRANCHES -->
+      <div class="row" style="width:1020px;align-items:flex-start;gap:10px;margin-top:0;">
+
+        <!-- LEFT: Emergency -->
+        <div class="col" style="max-width:160px;padding-top:20px;">
+          <div class="arrow" style="height:20px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+          <div style="font-size:10px;font-weight:700;color:#b71c1c;margin-bottom:4px;">EMERGENCY</div>
+          <div class="node"><div class="n-process n-sm" style="background:linear-gradient(135deg,#b71c1c,#c62828);font-size:11px;width:155px;">
+            🚨 Play Emergency<br/>Closed Message
+          </div></div>
+          <div class="arrow" style="height:16px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+          <div class="node"><div class="n-end" style="width:155px;font-size:11px;">Disconnect</div></div>
+        </div>
+
+        <!-- LEFT-MID: Closed/Holiday -->
+        <div class="col" style="max-width:175px;padding-top:20px;">
+          <div class="arrow" style="height:20px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+          <div style="font-size:10px;font-weight:700;color:#e65100;margin-bottom:4px;">CLOSED / HOLIDAY</div>
+          <div class="node"><div class="n-process n-sm" style="background:linear-gradient(135deg,#e65100,#f4511e);font-size:11px;width:165px;">
+            🔒 Play Closed / Holiday<br/>Message
+          </div></div>
+          <div class="arrow" style="height:16px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+          <div class="node"><div class="n-end" style="width:165px;font-size:11px;">Disconnect</div></div>
+        </div>
+
+        <!-- CENTER: OPEN -->
+        <div class="col" style="flex:1;align-items:center;">
+          <div class="arrow" style="height:20px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+          <div style="font-size:10px;font-weight:700;color:#2e7d32;margin-bottom:6px;">OPEN ✓</div>
+
+          <!-- STEP 2: LANGUAGE SELECTION -->
+          <div class="node" style="position:relative;">
+            <div class="step-num">2</div>
+            <div class="n-menu n-wide">
+              🌐 Language Selection Menu<br/>
+              <span style="font-size:10px;font-weight:400;">"For English press 1. Para Español oprima 2."</span><br/>
+              <span style="font-size:10px;margin-top:2px;display:inline-flex;gap:18px;">
+                <span>① English → TTS: <strong>Jill</strong></span>
+                <span>② Español → TTS: <strong>Isabel</strong></span>
+              </span>
+            </div>
+          </div>
+
+          <div class="arrow" style="height:22px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+          <!-- STEP 3: UPFRONT MSG -->
+          <div class="node" style="position:relative;">
+            <div class="step-num">3</div>
+            <div class="n-note n-wide">
+              ⚙️ &nbsp;<strong>Upfront Message Check</strong> &nbsp;(Supervisor Toggle)<br/>
+              Data Table: <code>VJ_claudeDatatable</code> &nbsp;→&nbsp; Key: <code>ORS_UPFRONT_MSG</code><br/>
+              <span style="font-size:10px;">Active = <strong>true</strong>: Play message &nbsp;|&nbsp; Active = <strong>false</strong>: Skip silently</span>
+            </div>
+          </div>
+
+          <div class="arrow" style="height:22px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+          <!-- STEP 4: CALL TYPE MENU -->
+          <div class="node" style="position:relative;">
+            <div class="step-num">4</div>
+            <div class="n-menu n-wide">
+              📋 Call Type Selection Menu<br/>
+              <span style="font-size:10px;font-weight:400;">EN: "For Driver Support press 1. For Customer Care press 2."</span><br/>
+              <span style="font-size:10px;font-weight:400;">ES: "Para Soporte de Conductor oprima 1. Para Atención al Cliente oprima 2."</span>
+            </div>
+          </div>
+
+          <div class="arrow" style="height:22px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+          <!-- STEP 5: GREETING -->
+          <div class="node" style="position:relative;">
+            <div class="step-num">5</div>
+            <div class="n-process n-wide">
+              📢 Play Greeting<br/>
+              <span style="font-size:10px;font-weight:400;">"You have reached On Road Support. Your call may be recorded."</span>
+            </div>
+          </div>
+
+          <div class="arrow" style="height:22px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+          <!-- STEP 6: SPLIT TO QUEUES -->
+          <div class="row" style="width:500px;gap:20px;align-items:flex-start;">
+
+            <!-- DRIVER -->
+            <div class="col">
+              <div style="font-size:10px;font-weight:700;color:#1565c0;margin-bottom:6px;">① DRIVER SUPPORT</div>
+              <div class="node" style="position:relative;">
+                <div class="step-num">6a</div>
+                <div class="n-queue n-sm" style="font-size:11px;">
+                  🚗 Transfer to Queue<br/><strong>ORS_Driver_Queue</strong><br/>
+                  <span style="font-size:10px;opacity:.85;">Pre-transfer hold message</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- CC -->
+            <div class="col">
+              <div style="font-size:10px;font-weight:700;color:#6a1b9a;margin-bottom:6px;">② CUSTOMER CARE</div>
+              <div class="node" style="position:relative;">
+                <div class="step-num">6b</div>
+                <div class="n-queue n-sm" style="background:linear-gradient(135deg,#6a1b9a,#7b1fa2);border-color:#4a148c;font-size:11px;">
+                  👤 Transfer to Queue<br/><strong>ORS_CustomerCare_Queue</strong><br/>
+                  <span style="font-size:10px;opacity:.85;">Pre-transfer hold message</span>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /row queues -->
+
+        </div><!-- /col OPEN -->
+      </div><!-- /row schedule branches -->
+    </div>
+
+    <!-- ═══════════════════════════════════ -->
+    <!--   IN-QUEUE EXPERIENCE              -->
+    <!-- ═══════════════════════════════════ -->
+    <div class="section-label" style="margin-top:30px;">▶ IN-QUEUE EXPERIENCE</div>
+
+    <div class="inq-section" style="margin-top:14px;">
+
+      <!-- DRIVER IN-QUEUE -->
+      <div class="inq-col">
+        <div class="branch-title bt-inq-d" style="width:100%;text-align:center;">
+          🚗 &nbsp;ORS_Driver_InQueue &nbsp;|&nbsp; Driver Queue
+        </div>
+
+        <div class="node" style="width:100%;">
+          <div class="n-start" style="width:100%;border-radius:6px;">Caller enters Driver Queue</div>
+        </div>
+        <div class="arrow" style="height:20px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+        <div class="node" style="width:100%;position:relative;">
+          <div class="step-num">A</div>
+          <div class="n-note" style="width:100%;">
+            ⚙️ &nbsp;<strong>InQueue Upfront Check</strong><br/>
+            Key: <code>ORS_DRIVER_INQUEUE_MSG</code><br/>
+            <span style="font-size:10px;">Supervisor toggle Active on/off</span>
+          </div>
+        </div>
+        <div class="arrow" style="height:18px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+        <div class="node" style="width:100%;position:relative;">
+          <div class="step-num">B</div>
+          <div class="n-inqueue" style="width:100%;">
+            🎵 Hold Music Plays<br/>
+            <span style="font-size:10px;font-weight:400;">PromptSystem.on_hold_music · 30s cycle</span>
+          </div>
+        </div>
+        <div class="arrow" style="height:14px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+        <div class="loop-box">↩ Loop repeats until agent answers or caller disconnects</div>
+
+        <div class="arrow" style="height:18px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+        <div class="node" style="width:100%;">
+          <div class="n-queue" style="width:100%;background:linear-gradient(135deg,#1b5e20,#2e7d32);">
+            ✅ Agent Answers<br/><span style="font-size:10px;font-weight:400;">Call connected to Driver Support agent</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SPACER -->
+      <div style="width:20px;flex-shrink:0;border-left:2px dashed #cfd8dc;margin:0 10px;"></div>
+
+      <!-- CUSTOMER CARE IN-QUEUE -->
+      <div class="inq-col">
+        <div class="branch-title bt-inq-cc" style="width:100%;text-align:center;">
+          👤 &nbsp;ORS_CustomerCare_InQueue &nbsp;|&nbsp; Customer Care Queue
+        </div>
+
+        <div class="node" style="width:100%;">
+          <div class="n-start" style="width:100%;border-radius:6px;background:linear-gradient(135deg,#00695c,#00796b);border-color:#004d40;">Caller enters Customer Care Queue</div>
+        </div>
+        <div class="arrow" style="height:20px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+        <div class="node" style="width:100%;position:relative;">
+          <div class="step-num">A</div>
+          <div class="n-note" style="width:100%;">
+            ⚙️ &nbsp;<strong>InQueue Upfront Check</strong><br/>
+            Key: <code>ORS_CC_INQUEUE_MSG</code><br/>
+            <span style="font-size:10px;">Supervisor toggle Active on/off</span>
+          </div>
+        </div>
+        <div class="arrow" style="height:18px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+        <div class="node" style="width:100%;position:relative;">
+          <div class="step-num">B</div>
+          <div class="n-inqueue" style="width:100%;">
+            🎵 Hold Music – 60 Seconds<br/>
+            <span style="font-size:10px;font-weight:400;">PromptSystem.on_hold_music</span>
+          </div>
+        </div>
+        <div class="arrow" style="height:18px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+        <div class="node" style="width:100%;position:relative;">
+          <div class="step-num">C</div>
+          <div class="n-process" style="width:100%;font-size:11px;">
+            🔊 Play Patience Message<br/>
+            <span style="font-size:10px;font-weight:400;">"Thanks for your patience. Our representatives are busy.<br/>Please remain on the line for the next available rep."</span>
+          </div>
+        </div>
+        <div class="arrow" style="height:14px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+        <div class="loop-box">↩ Loop: returns to Step B (60s Hold) until agent answers or caller disconnects</div>
+
+        <div class="arrow" style="height:18px;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+        <div class="node" style="width:100%;">
+          <div class="n-queue" style="width:100%;background:linear-gradient(135deg,#1b5e20,#2e7d32);">
+            ✅ Agent Answers<br/><span style="font-size:10px;font-weight:400;">Call connected to Customer Care agent</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /inq-section -->
+
+    <!-- ═══════════════════════════════════ -->
+    <!--   RESOURCE REFERENCE TABLE         -->
+    <!-- ═══════════════════════════════════ -->
+    <div class="section-label" style="margin-top:28px;">▶ GENESYS CLOUD RESOURCE REFERENCE</div>
+    <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:10px;">
+      <thead>
+        <tr style="background:#1a237e;color:#fff;">
+          <th style="padding:8px 12px;text-align:left;">Resource</th>
+          <th style="padding:8px 12px;text-align:left;">Name</th>
+          <th style="padding:8px 12px;text-align:left;">ID</th>
+          <th style="padding:8px 12px;text-align:left;">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background:#e8eaf6;">
+          <td style="padding:7px 12px;font-weight:600;color:#1a237e;">Inbound Flow</td>
+          <td style="padding:7px 12px;">ORS_Main_Inbound</td>
+          <td style="padding:7px 12px;font-family:monospace;font-size:10px;">7cfdcc60-d17e-4b5f-80d8-f0630287fb06</td>
+          <td style="padding:7px 12px;">v1.0 · Published</td>
+        </tr>
+        <tr>
+          <td style="padding:7px 12px;font-weight:600;color:#37474f;">InQueue Flow</td>
+          <td style="padding:7px 12px;">ORS_Driver_InQueue</td>
+          <td style="padding:7px 12px;font-family:monospace;font-size:10px;">a71c82a8-3bfb-41cf-8ab8-de631ec90f0b</td>
+          <td style="padding:7px 12px;">v1.0 · Assigned to ORS_Driver_Queue</td>
+        </tr>
+        <tr style="background:#e8eaf6;">
+          <td style="padding:7px 12px;font-weight:600;color:#37474f;">InQueue Flow</td>
+          <td style="padding:7px 12px;">ORS_CustomerCare_InQueue</td>
+          <td style="padding:7px 12px;font-family:monospace;font-size:10px;">fc18e5a3-fc0e-4464-b070-b508ab04eb8a</td>
+          <td style="padding:7px 12px;">v1.0 · Assigned to ORS_CustomerCare_Queue</td>
+        </tr>
+        <tr>
+          <td style="padding:7px 12px;font-weight:600;color:#00695c;">Queue</td>
+          <td style="padding:7px 12px;">ORS_Driver_Queue</td>
+          <td style="padding:7px 12px;font-family:monospace;font-size:10px;">c145390d-d8b7-40c9-ad2f-5e593507757b</td>
+          <td style="padding:7px 12px;">Driver Support · Voice</td>
+        </tr>
+        <tr style="background:#e8eaf6;">
+          <td style="padding:7px 12px;font-weight:600;color:#00695c;">Queue</td>
+          <td style="padding:7px 12px;">ORS_CustomerCare_Queue</td>
+          <td style="padding:7px 12px;font-family:monospace;font-size:10px;">57516f74-26d6-4b0c-baa2-49092fcf08c8</td>
+          <td style="padding:7px 12px;">Customer Care · Voice</td>
+        </tr>
+        <tr>
+          <td style="padding:7px 12px;font-weight:600;color:#e65100;">Schedule Group</td>
+          <td style="padding:7px 12px;">ORS_Schedule_Group</td>
+          <td style="padding:7px 12px;font-family:monospace;font-size:10px;">50be470a-eb38-4802-830b-177fd9a8ae52</td>
+          <td style="padding:7px 12px;">5AM–11PM CST · Daily · America/Chicago</td>
+        </tr>
+        <tr style="background:#e8eaf6;">
+          <td style="padding:7px 12px;font-weight:600;color:#e65100;">Schedule</td>
+          <td style="padding:7px 12px;">ORS_Business_Hours</td>
+          <td style="padding:7px 12px;font-family:monospace;font-size:10px;">c109246d-b370-4f8a-bfdc-d97087f29573</td>
+          <td style="padding:7px 12px;">FREQ=DAILY · 05:00–23:00</td>
+        </tr>
+        <tr>
+          <td style="padding:7px 12px;font-weight:600;color:#ff8f00;">Data Table</td>
+          <td style="padding:7px 12px;">VJ_claudeDatatable</td>
+          <td style="padding:7px 12px;font-family:monospace;font-size:10px;">a698670c-8b83-4ddb-af04-04f67eee0c78</td>
+          <td style="padding:7px 12px;">Keys: ORS_UPFRONT_MSG · ORS_DRIVER_INQUEUE_MSG · ORS_CC_INQUEUE_MSG</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div><!-- /flow-wrap -->
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div>ORS Call Flow Diagram · Ahold Delhaize · On Road Support · Genesys Cloud US West 2 · Division: Claude_Exploration_Vijay</div>
+    <div>Generated: 2026-02-26 &nbsp;|&nbsp; Confidential</div>
+  </div>
+
+</div><!-- /page -->
+</body>
+</html>

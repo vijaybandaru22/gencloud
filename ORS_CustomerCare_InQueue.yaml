@@ -1,0 +1,97 @@
+inqueueCall:
+  name: ORS_CustomerCare_InQueue
+  description: "ORS Customer Care Queue - In-Queue Experience | Supervisor-toggled upfront message, 60-sec hold music with periodic patience message loop. Bilingual EN/ES. Created: 2026-02-26T09:30:00Z"
+  division: Claude_Exploration_Vijay
+  defaultLanguage: en-us
+  supportedLanguages:
+    en-us:
+      defaultLanguageSkill:
+        noValue: true
+      textToSpeech:
+        defaultEngine:
+          voice: Jill
+    es-us:
+      defaultLanguageSkill:
+        noValue: true
+      textToSpeech:
+        defaultEngine:
+          voice: Isabel
+  settingsInQueueCall:
+    holdMusic:
+      lit:
+        name: PromptSystem.on_hold_music
+  settingsActionDefaults:
+    callData:
+      processingPrompt:
+        noValue: true
+  settingsErrorHandling:
+    errorHandling:
+      disconnect:
+        none: true
+    preHandlingAudio:
+      tts: Sorry, an error occurred. Please try your call again.
+  settingsPrompts:
+    ensureAudioInPrompts: false
+
+  variables:
+    - booleanVariable:
+        name: Flow.UpfrontActive
+        initialValue:
+          lit: false
+    - stringVariable:
+        name: Flow.UpfrontMessage
+        initialValue:
+          noValue: true
+
+  startUpTaskActions:
+    - dataTableLookup:
+        name: Lookup CC InQueue Upfront Config
+        lookupValue:
+          lit: ORS_CC_INQUEUE_MSG
+        dataTable:
+          VJ_claudeDatatable:
+            foundOutputs:
+              Active:
+                var: Flow.UpfrontActive
+              Message:
+                var: Flow.UpfrontMessage
+            failureOutputs:
+              errorType:
+                noValue: true
+              errorMessage:
+                noValue: true
+        outputs:
+          found:
+            actions:
+              - decision:
+                  name: Check If CC Upfront Active
+                  condition:
+                    exp: Flow.UpfrontActive
+                  outputs:
+                    "yes":
+                      actions:
+                        - playAudio:
+                            name: Play CC InQueue Upfront Message
+                            audio:
+                              exp: "AudioPlaybackOptions(ToAudioTTS(Flow.UpfrontMessage), true)"
+                    "no":
+                      actions: []
+          notFound:
+            actions: []
+          failure:
+            actions: []
+    - holdMusic:
+        name: CC Hold Music 60 Seconds
+        prompt:
+          lit:
+            name: PromptSystem.on_hold_music
+        bargeInEnabled:
+          lit: false
+        playStyle:
+          duration:
+            lit:
+              seconds: 60
+    - playAudio:
+        name: Play Patience Message
+        audio:
+          tts: "Thanks for your patience. Looks like our representatives are busy. Please remain on the line while we connect you with the next available representative."

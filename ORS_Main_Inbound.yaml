@@ -1,0 +1,405 @@
+inboundCall:
+  name: ORS_Main_Inbound
+  description: "On Road Support (ORS) - Ahold Delhaize | Bilingual EN/ES (Jill/Isabel TTS), Language Selection, Schedule Group Check (Open/Closed/Emergency/Holiday), Caller self-selects Driver or CustomerCare, Supervisor Upfront Message toggle via Data Table. Created: 2026-02-26T09:30:00Z | Updated: 2026-02-26T11:55:00Z | Region: US West 2"
+  division: Claude_Exploration_Vijay
+  startUpRef: "/inboundCall/tasks/task[Schedule_Check_10]"
+  defaultLanguage: en-us
+  supportedLanguages:
+    en-us:
+      defaultLanguageSkill:
+        noValue: true
+      textToSpeech:
+        defaultEngine:
+          voice: Jill
+    es-us:
+      defaultLanguageSkill:
+        noValue: true
+      textToSpeech:
+        defaultEngine:
+          voice: Isabel
+  initialGreeting:
+    noValue: true
+  settingsActionDefaults:
+    callData:
+      processingPrompt:
+        noValue: true
+    callBridge:
+      processingPrompt:
+        noValue: true
+  settingsErrorHandling:
+    errorHandling:
+      disconnect:
+        none: true
+    preHandlingAudio:
+      tts: "An error has occurred. Goodbye."
+  settingsMenu:
+    extensionDialingMaxDelay:
+      lit:
+        seconds: 1
+    listenForExtensionDialing:
+      lit: false
+    menuSelectionTimeout:
+      lit:
+        seconds: 10
+    repeatCount:
+      lit: 3
+  settingsPrompts:
+    ensureAudioInPrompts: false
+  variables:
+    - booleanVariable:
+        name: Flow.UpfrontActive
+        initialValue:
+          lit: false
+    - stringVariable:
+        name: Flow.UpfrontMessage
+        initialValue:
+          noValue: true
+    - stringVariable:
+        name: Flow.CallerLanguage
+        initialValue:
+          lit: "en"
+
+  menus:
+    - menu:
+        name: Language Menu
+        refId: Language_Menu_1
+        audio:
+          tts: "Thank you for calling On Road Support. For English, press 1. Para Español, oprima 2."
+        settingsMenu:
+          extensionDialingMaxDelay:
+            noValue: true
+          listenForExtensionDialing:
+            lit: false
+          menuSelectionTimeout:
+            lit:
+              seconds: 10
+          repeatCount:
+            lit: 3
+        choices:
+          - menuTask:
+              name: Language Default EN
+              refId: Language_Default_EN_100
+              dtmf: digit_*
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - setLanguage:
+                      name: Set English Default
+                      language: en-us
+                  - updateData:
+                      name: Track English Default
+                      statements:
+                        - string:
+                            variable: Flow.CallerLanguage
+                            value:
+                              lit: "en"
+                  - jumpToTask:
+                      name: Go to Upfront Check EN
+                      targetTaskRef: "/inboundCall/tasks/task[Upfront_Check_30]"
+          - menuTask:
+              name: Select English
+              refId: Select_English_101
+              dtmf: digit_1
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - setLanguage:
+                      name: Set Language English
+                      language: en-us
+                  - updateData:
+                      name: Track English Selection
+                      statements:
+                        - string:
+                            variable: Flow.CallerLanguage
+                            value:
+                              lit: "en"
+                  - jumpToTask:
+                      name: Go to Upfront Check After English
+                      targetTaskRef: "/inboundCall/tasks/task[Upfront_Check_30]"
+          - menuTask:
+              name: Select Spanish
+              refId: Select_Spanish_102
+              dtmf: digit_2
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - setLanguage:
+                      name: Set Language Spanish
+                      language: es-us
+                  - updateData:
+                      name: Track Spanish Selection
+                      statements:
+                        - string:
+                            variable: Flow.CallerLanguage
+                            value:
+                              lit: "es"
+                  - jumpToTask:
+                      name: Go to Upfront Check After Spanish
+                      targetTaskRef: "/inboundCall/tasks/task[Upfront_Check_30]"
+        defaultChildMenuRef: "./choices/menuTask[Language_Default_EN_100]"
+
+    - menu:
+        name: Call Type Menu EN
+        refId: Call_Type_Menu_EN_2
+        audio:
+          tts: "For Driver Support, press 1. For Customer Care, press 2."
+        settingsMenu:
+          extensionDialingMaxDelay:
+            noValue: true
+          listenForExtensionDialing:
+            lit: false
+          menuSelectionTimeout:
+            lit:
+              seconds: 10
+          repeatCount:
+            lit: 3
+        choices:
+          - menuTask:
+              name: Default Call Type EN
+              refId: Default_CallType_EN_200
+              dtmf: digit_*
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - jumpToTask:
+                      name: Default to Driver EN
+                      targetTaskRef: "/inboundCall/tasks/task[Driver_Greeting_50]"
+          - menuTask:
+              name: Driver Support EN
+              refId: Driver_EN_201
+              dtmf: digit_1
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - jumpToTask:
+                      name: Go to Driver Greeting EN
+                      targetTaskRef: "/inboundCall/tasks/task[Driver_Greeting_50]"
+          - menuTask:
+              name: Customer Care EN
+              refId: CC_EN_202
+              dtmf: digit_2
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - jumpToTask:
+                      name: Go to CC Greeting EN
+                      targetTaskRef: "/inboundCall/tasks/task[CC_Greeting_51]"
+        defaultChildMenuRef: "./choices/menuTask[Default_CallType_EN_200]"
+
+    - menu:
+        name: Call Type Menu ES
+        refId: Call_Type_Menu_ES_3
+        audio:
+          tts: "Para Soporte de Conductor, oprima 1. Para Atención al Cliente, oprima 2."
+        settingsMenu:
+          extensionDialingMaxDelay:
+            noValue: true
+          listenForExtensionDialing:
+            lit: false
+          menuSelectionTimeout:
+            lit:
+              seconds: 10
+          repeatCount:
+            lit: 3
+        choices:
+          - menuTask:
+              name: Default Call Type ES
+              refId: Default_CallType_ES_300
+              dtmf: digit_*
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - jumpToTask:
+                      name: Default to Driver ES
+                      targetTaskRef: "/inboundCall/tasks/task[Driver_Greeting_50]"
+          - menuTask:
+              name: Soporte Conductor ES
+              refId: Driver_ES_301
+              dtmf: digit_1
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - jumpToTask:
+                      name: Go to Driver Greeting ES
+                      targetTaskRef: "/inboundCall/tasks/task[Driver_Greeting_50]"
+          - menuTask:
+              name: Atencion Cliente ES
+              refId: CC_ES_302
+              dtmf: digit_2
+              globalDtmf: false
+              globalSpeechRecTerms: false
+              task:
+                actions:
+                  - jumpToTask:
+                      name: Go to CC Greeting ES
+                      targetTaskRef: "/inboundCall/tasks/task[CC_Greeting_51]"
+        defaultChildMenuRef: "./choices/menuTask[Default_CallType_ES_300]"
+
+  tasks:
+    - task:
+        name: Schedule Check
+        refId: Schedule_Check_10
+        actions:
+          - evaluateScheduleGroup:
+              name: Check ORS Business Hours
+              scheduleGroup:
+                lit:
+                  id: 50be470a-eb38-4802-830b-177fd9a8ae52
+                  name: ORS_Schedule_Group
+              outputs:
+                open:
+                  actions:
+                    - jumpToMenu:
+                        name: Go to Language Menu
+                        targetMenuRef: "/inboundCall/menus/menu[Language_Menu_1]"
+                closed:
+                  actions:
+                    - playAudio:
+                        name: Play Closed Message
+                        audio:
+                          tts: "You have reached On Road Support. We are currently closed. We open at 5:00 AM. If this is an urgent matter, please contact your local facility or customer care manager. Thank you for calling."
+                    - disconnect:
+                        name: Disconnect Closed
+                holiday:
+                  actions:
+                    - playAudio:
+                        name: Play Holiday Message
+                        audio:
+                          tts: "You have reached On Road Support. We are currently closed for the holiday. We open at 5:00 AM. If this is an urgent matter, please contact your local facility or customer care manager. Thank you for calling."
+                    - disconnect:
+                        name: Disconnect Holiday
+                emergency:
+                  actions:
+                    - playAudio:
+                        name: Play Emergency Message
+                        audio:
+                          tts: "You have reached On Road Support. We are currently unavailable by phone due to an unplanned emergency. For urgent matters, please contact the local facility or your customer care manager."
+                    - disconnect:
+                        name: Disconnect Emergency
+
+    - task:
+        name: Upfront Check
+        refId: Upfront_Check_30
+        actions:
+          - dataTableLookup:
+              name: Lookup ORS Upfront Config
+              lookupValue:
+                lit: ORS_UPFRONT_MSG
+              dataTable:
+                VJ_claudeDatatable:
+                  foundOutputs:
+                    Active:
+                      var: Flow.UpfrontActive
+                    Message:
+                      var: Flow.UpfrontMessage
+                  failureOutputs:
+                    errorType:
+                      noValue: true
+                    errorMessage:
+                      noValue: true
+              outputs:
+                found:
+                  actions:
+                    - decision:
+                        name: Check If Upfront Active
+                        condition:
+                          exp: Flow.UpfrontActive
+                        outputs:
+                          "yes":
+                            actions:
+                              - playAudio:
+                                  name: Play Upfront Message
+                                  audio:
+                                    exp: "AudioPlaybackOptions(ToAudioTTS(Flow.UpfrontMessage), true)"
+                              - jumpToTask:
+                                  name: Go to Call Type Selection After Upfront
+                                  targetTaskRef: "/inboundCall/tasks/task[Call_Type_Route_40]"
+                          "no":
+                            actions:
+                              - jumpToTask:
+                                  name: Skip Upfront Go to Call Type
+                                  targetTaskRef: "/inboundCall/tasks/task[Call_Type_Route_40]"
+                notFound:
+                  actions:
+                    - jumpToTask:
+                        name: Go to Call Type Not Found
+                        targetTaskRef: "/inboundCall/tasks/task[Call_Type_Route_40]"
+                failure:
+                  actions:
+                    - jumpToTask:
+                        name: Go to Call Type Failure
+                        targetTaskRef: "/inboundCall/tasks/task[Call_Type_Route_40]"
+
+    - task:
+        name: Call Type Route
+        refId: Call_Type_Route_40
+        actions:
+          - decision:
+              name: Check Active Language
+              condition:
+                exp: 'Flow.CallerLanguage == "es"'
+              outputs:
+                "yes":
+                  actions:
+                    - jumpToMenu:
+                        name: Go to Spanish Call Type Menu
+                        targetMenuRef: "/inboundCall/menus/menu[Call_Type_Menu_ES_3]"
+                "no":
+                  actions:
+                    - jumpToMenu:
+                        name: Go to English Call Type Menu
+                        targetMenuRef: "/inboundCall/menus/menu[Call_Type_Menu_EN_2]"
+
+    - task:
+        name: Driver Greeting
+        refId: Driver_Greeting_50
+        actions:
+          - playAudio:
+              name: Play Driver Greeting
+              audio:
+                tts: "You have reached On Road Support. Your call may be recorded."
+          - transferToAcd:
+              name: Transfer to ORS Driver Queue
+              targetQueue:
+                lit:
+                  id: c145390d-d8b7-40c9-ad2f-5e593507757b
+                  name: ORS_Driver_Queue
+              preTransferAudio:
+                tts: "Please hold while we connect you with the next available On Road Support driver representative."
+              failureTransferAudio:
+                tts: "We are sorry, all driver support representatives are currently busy. Please try your call again. Thank you for contacting On Road Support."
+              priority:
+                lit: 0
+          - disconnect:
+              name: End Driver Call
+
+    - task:
+        name: CC Greeting
+        refId: CC_Greeting_51
+        actions:
+          - playAudio:
+              name: Play CC Greeting
+              audio:
+                tts: "You have reached On Road Support. Your call may be recorded."
+          - transferToAcd:
+              name: Transfer to ORS CustomerCare Queue
+              targetQueue:
+                lit:
+                  id: 57516f74-26d6-4b0c-baa2-49092fcf08c8
+                  name: ORS_CustomerCare_Queue
+              preTransferAudio:
+                tts: "Please hold while we connect you with the next available customer care representative."
+              failureTransferAudio:
+                tts: "We are sorry, all customer care representatives are currently busy. Please try your call again. Thank you for contacting On Road Support."
+              priority:
+                lit: 0
+          - disconnect:
+              name: End CC Call

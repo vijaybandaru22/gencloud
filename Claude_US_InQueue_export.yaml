@@ -1,0 +1,120 @@
+inqueueCall:
+  name: Claude_US_InQueue
+  description: Claude Cars US Queue in-queue - PIQ/EWT, hold music, AI car promo (3 min threshold)
+  division: Claude_Exploration_Vijay
+  defaultLanguage: en-us
+  supportedLanguages:
+    en-us:
+      defaultLanguageSkill:
+        noValue: true
+      textToSpeech:
+        defaultEngine:
+          voice: Jill
+  settingsInQueueCall:
+    holdMusic:
+      lit:
+        name: PromptSystem.on_hold_music
+  settingsActionDefaults:
+    playAudioOnSilence:
+      timeout:
+        lit:
+          seconds: 40
+    detectSilence:
+      timeout:
+        lit:
+          seconds: 40
+    callData:
+      processingPrompt:
+        lit:
+          name: PromptSystem.processing
+    collectInput:
+      noEntryTimeout:
+        lit:
+          seconds: 5
+    dialByExtension:
+      interDigitTimeout:
+        lit:
+          seconds: 6
+    transferToUser:
+      connectTimeout:
+        noValue: true
+    transferToNumber:
+      connectTimeout:
+        noValue: true
+    transferToGroup:
+      connectTimeout:
+        noValue: true
+    transferToFlowSecure:
+      connectTimeout:
+        lit:
+          seconds: 15
+  settingsErrorHandling:
+    errorHandling:
+      disconnect:
+        none: true
+    preHandlingAudio:
+      tts: Sorry, an error occurred. Please try your call again.
+  settingsPrompts:
+    ensureAudioInPrompts: false
+    promptMediaToValidate:
+      - mediaType: audio
+      - mediaType: tts
+  startUpTaskActions:
+    - playEstimatedWaitTime:
+        name: Play PIQ and EWT
+        estimatedWaitTime:
+          exp: Call.EstimatedWaitTime
+        roundingInterval:
+          lit:
+            minutes: 5
+        specificRoundingIntervals:
+          - lit:
+              seconds: 30
+          - lit:
+              minutes: 1
+          - lit:
+              minutes: 2
+          - lit:
+              minutes: 5
+        playbackMode: lessThan
+    - holdMusic:
+        name: Hold Music 30 Seconds
+        prompt:
+          exp: Flow.HoldPrompt
+        bargeInEnabled:
+          lit: false
+        playStyle:
+          duration:
+            lit:
+              seconds: 30
+    - playAudio:
+        name: AI Car Promo
+        audio:
+          tts: Claude Cars is thrilled to introduce our new future AI car model. This revolutionary vehicle has the capability to fly above traffic during traffic jams, saving you valuable time. It can also travel through rivers and water bodies with ease. Experience the future of transportation with Claude Cars.
+    - playEstimatedWaitTime:
+        name: Updated PIQ and EWT
+        estimatedWaitTime:
+          exp: Call.EstimatedWaitTime
+        roundingInterval:
+          lit:
+            minutes: 5
+        specificRoundingIntervals:
+          - lit:
+              seconds: 30
+          - lit:
+              minutes: 1
+          - lit:
+              minutes: 2
+          - lit:
+              minutes: 5
+        playbackMode: lessThan
+    - holdMusic:
+        name: Hold Music Before Loop
+        prompt:
+          exp: Flow.HoldPrompt
+        bargeInEnabled:
+          lit: false
+        playStyle:
+          duration:
+            lit:
+              seconds: 30

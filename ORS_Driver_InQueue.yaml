@@ -1,0 +1,93 @@
+inqueueCall:
+  name: ORS_Driver_InQueue
+  description: "ORS Driver Queue - In-Queue Experience | Supervisor-toggled upfront message, continuous hold music loop. Bilingual EN/ES. Created: 2026-02-26T09:30:00Z"
+  division: Claude_Exploration_Vijay
+  defaultLanguage: en-us
+  supportedLanguages:
+    en-us:
+      defaultLanguageSkill:
+        noValue: true
+      textToSpeech:
+        defaultEngine:
+          voice: Jill
+    es-us:
+      defaultLanguageSkill:
+        noValue: true
+      textToSpeech:
+        defaultEngine:
+          voice: Isabel
+  settingsInQueueCall:
+    holdMusic:
+      lit:
+        name: PromptSystem.on_hold_music
+  settingsActionDefaults:
+    callData:
+      processingPrompt:
+        noValue: true
+  settingsErrorHandling:
+    errorHandling:
+      disconnect:
+        none: true
+    preHandlingAudio:
+      tts: Sorry, an error occurred. Please try your call again.
+  settingsPrompts:
+    ensureAudioInPrompts: false
+
+  variables:
+    - booleanVariable:
+        name: Flow.UpfrontActive
+        initialValue:
+          lit: false
+    - stringVariable:
+        name: Flow.UpfrontMessage
+        initialValue:
+          noValue: true
+
+  startUpTaskActions:
+    - dataTableLookup:
+        name: Lookup Driver InQueue Upfront Config
+        lookupValue:
+          lit: ORS_DRIVER_INQUEUE_MSG
+        dataTable:
+          VJ_claudeDatatable:
+            foundOutputs:
+              Active:
+                var: Flow.UpfrontActive
+              Message:
+                var: Flow.UpfrontMessage
+            failureOutputs:
+              errorType:
+                noValue: true
+              errorMessage:
+                noValue: true
+        outputs:
+          found:
+            actions:
+              - decision:
+                  name: Check If Upfront Active
+                  condition:
+                    exp: Flow.UpfrontActive
+                  outputs:
+                    "yes":
+                      actions:
+                        - playAudio:
+                            name: Play Driver InQueue Upfront Message
+                            audio:
+                              exp: "AudioPlaybackOptions(ToAudioTTS(Flow.UpfrontMessage), true)"
+                    "no":
+                      actions: []
+          notFound:
+            actions: []
+          failure:
+            actions: []
+    - holdMusic:
+        name: Driver Hold Music
+        prompt:
+          lit:
+            name: PromptSystem.on_hold_music
+        bargeInEnabled:
+          lit: false
+        playStyle:
+          duration:
+            lit:
+              seconds: 30
